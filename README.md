@@ -16,6 +16,7 @@ this project was made by:
 * Wassim Benfraj
 * Feres Ben Hamed
 * Adam El Amri
+* Ahmed Touil
 
 	
 ## Technologies

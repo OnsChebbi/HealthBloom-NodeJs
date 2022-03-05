@@ -3,8 +3,16 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-var MONGODB_URL = "mongodb://localhost:27017" ;
+
+
+// connection to DataBase
 var mongoose = require("mongoose");
+var config = require('./database/db.json');
+mongoose.connect(config.mongo.uri,{
+	useNewUrlParser: true,
+	useUnifiedTopology: true},
+	()=> console.log('data base connection success')
+)
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');

@@ -7,19 +7,22 @@
   },
   "author": "Binary Brains",
   "dependencies": {
+    "bcrypt": "^5.0.1",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "ejs": "^3.1.6",
     "express": "~4.16.1",
     "http-errors": "~1.6.3",
     "jade": "~1.11.0",
-    "mongoose": "^6.2.3",
+    "mongoose": "^5.11.15",
     "morgan": "~1.9.1",
     "path": "^0.12.7"
   },
   "description": "* [General info](#general-info)\r * [Was made by :](#Made-by)\r * [Technologies](#technologies)\r * [Setup](#setup)",
   "main": "app.js",
-  "devDependencies": {},
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/OnsChebbi/HealthBloom-NodeJs.git"

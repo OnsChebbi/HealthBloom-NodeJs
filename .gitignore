@@ -4,3 +4,4 @@
 
 # IDEs and editors
 /.idea
+/node_modules/

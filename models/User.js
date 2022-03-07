@@ -12,3 +12,4 @@ var user = new Schema({
     Token : String
 });
 module.exports = mongoose.model('user',user);
+

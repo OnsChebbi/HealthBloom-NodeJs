@@ -2,8 +2,10 @@ require("dotenv").config();
 var express = require('express');
 var router = express.Router();
 var User = require('../models/User');
+var Patient = require('../models/Patient');
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+
 
 /* GET users listing. */
 router.get('/',authenticataToken, function(req, res, next) {
@@ -47,7 +49,7 @@ router.post("/login", async (req,res)=>{
           }
       );
       user.Token = token;
-      res.status(200).json(user);
+      res.status(200).json(token);
     }
   }catch (err){
     console.log(err);
@@ -66,5 +68,20 @@ function authenticataToken(req,res,next) {
   });
 }
 
+router.post('/addPatient', async function (req, res, next) {
+
+  var user = new Patient({
+    FirstName: req.body.FirstName,
+    LastName: req.body.LastName,
+    Email: req.body.Email,
+    Password: await bcrypt.hash(req.body.Password,10),
+    Address: req.body.Address,
+    Picture: req.body.Picture,
+    Phone: req.body.Phone,
+    listeRdv: req.body.listeRdv
+  })
+  user.save();
+  res.status(200).send(user);
+})
 
 module.exports = router;

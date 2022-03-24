@@ -3,12 +3,12 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-var MONGODB_URL = "mongodb://localhost:27017/test" ;
+var MONGODB_URL = "mongodb+srv://nosnos:healthbloompw@healthbloom.b38oy.mongodb.net/healthbloom" ;
 var mongoose = require("mongoose");
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
-var articleRouter= require('./routes/articleRouter');
+var articleRouter= require('./routes/MagazineRouter/articleRouter');
 
 
 var app = express();
@@ -25,7 +25,7 @@ app.set('view engine', 'ejs');
 
 //Our static folder
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/magazine', articleRouter);
+app.use('/articles', articleRouter);
 
 app.use('/users', usersRouter);
 

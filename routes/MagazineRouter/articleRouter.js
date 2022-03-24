@@ -1,4 +1,4 @@
-const articleController= require('../controllers/articleController');
+const articleController= require('../../controllers/MagazineController/ArticleController.js');
 const router= require('express').Router()
 
 

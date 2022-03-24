@@ -1,8 +1,8 @@
+const { Db } = require('mongodb');
 const mongoose=require('mongoose');
-
+var ObjectId = require('mongoose').Types.ObjectId; 
 
 let schemaArticle=mongoose.Schema({
-    _id:String,
     title:String,
     subject:String,
     author: String,
@@ -16,7 +16,7 @@ let schemaArticle=mongoose.Schema({
 
 
 let Article=mongoose.model('article',schemaArticle)
-let url='mongodb://localhost:27017/test'
+let url='mongodb+srv://nosnos:healthbloompw@healthbloom.b38oy.mongodb.net/healthbloom';
 
 
 //Retrieve All Articles
@@ -27,15 +27,14 @@ console.log("new promise")
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(
             ()=>{
                 console.log("databse connected")
-
                //Find all articles
-               return Article.find({});
+               return Article.find();
             }
         )
         .then(articles => {
-            mongoose.disconnect();
             //resolve the result of the promise
             resolve(articles)
+            console.log(articles)
     
         })
         //catches errors
@@ -47,13 +46,12 @@ console.log("new promise")
 
 exports.getOneArticleDetails=(id)=>{
     return new Promise((resolve,reject)=>{
-    console.log(id)
-     mongoose.connect(url,{useNewUrlParser:true,useUnifiedTopology:true}).then(()=>{
-         return Article.findById(id)
+        var idArticle=mongoose.Types.ObjectId(id)
+        mongoose.connect(url,{useNewUrlParser:true,useUnifiedTopology:true}).then(()=>{
+         return Article.findById(idArticle);
    
        }).then(articles=>{
-           mongoose.disconnect()
-           resolve(articles)
+            resolve(articles)
            console.log(articles)
    
        }).catch(err=>reject(err))
@@ -65,14 +63,16 @@ exports.getOneArticleDetails=(id)=>{
 
 exports.deleteArticle=(id)=>{
     console.log('promise delete')
+    var idArticle=mongoose.Types.ObjectId(id)
+
     return new Promise((resolve,reject)=>{
     
      mongoose.connect(url,{useNewUrlParser:true,useUnifiedTopology:true}).then(()=>{
-         return Article.deleteOne({_id:id})
+         return Article.findOneAndRemove({_id:idArticle})
    
-       }).then(articles=>{
-           mongoose.disconnect()
-           resolve(true)
+       }).then(()=>{
+
+        resolve(true)
    
        }).catch(err=>reject(err))
  
@@ -81,34 +81,18 @@ exports.deleteArticle=(id)=>{
 }
 
 
-exports.addArticle=(title,subject,author,description,image)=>{
+exports.addArticle=(title,subject)=>{
     return new Promise((resolve,reject)=>{
         mongoose.connect(url,{useNewUrlParser:true,useUnifiedTopology:true}).then(()=>{
         console.log("1")
             let article=new Article({
                 title:title,
                 subject:subject,
-                author:author,
-                description:description,
-                image:image,
-                dateCreation: new Date(),
-                nbLikes: 0,
-                nbComments: 0,
-                promoted:false
+                
             })
             console.log("before insert")
-           return Article.insertOne(article, function(err, res) {
-            if (err) throw err;
-            console.log("1 document inserted");
-           
-          });
+           return article.save()
 
-        }).then(()=>{
-            mongoose.disconnect()
-            resolve('added !')
-        }).catch((err)=>{
-            mongoose.disconnect()
-            reject(err)
         })
     })
 

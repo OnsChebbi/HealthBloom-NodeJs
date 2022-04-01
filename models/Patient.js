@@ -1,10 +1,22 @@
+var util = require('util');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-var User = require('./User');
 
+var patient = new Schema({
+    height : Number,
+    appointments : [
+        {
+            Date : Date,
+            Doctor : {
+                type: Schema.Types.ObjectId,
+                ref : 'doctor'
+            }
+        }
+    ],
+    Cart : {
+        type: Schema.Types.ObjectId,
+        ref: 'cart'
+    }
+})
 
-var user = new User();
-var Patient = Object.create(user);
-Patient.listeRdv = String;
-var PatientSchema = new Schema(Patient);
-module.exports = mongoose.model('Patient',PatientSchema);
+module.exports = mongoose.model('patient',patient);

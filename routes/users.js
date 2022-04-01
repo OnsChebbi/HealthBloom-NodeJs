@@ -3,6 +3,8 @@ var express = require('express');
 var router = express.Router();
 var User = require('../models/User');
 var Patient = require('../models/Patient');
+var Doctor = require('../models/Doctor');
+var Assistant = require('../models/Assistant');
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -19,7 +21,6 @@ router.get('/',authenticataToken, function(req, res, next) {
 });
 
 router.post('/addUser', async function (req, res, next) {
-
   var user = new User({
     FirstName: req.body.FirstName,
     LastName: req.body.LastName,
@@ -27,8 +28,44 @@ router.post('/addUser', async function (req, res, next) {
     Password: await bcrypt.hash(req.body.Password,10),
     Address: req.body.Address,
     Picture: req.body.Picture,
-    Phone: req.body.Phone
+    Phone: req.body.Phone,
+    Role : req.body.Role,
+    BirthDate : req.body.BirthDate
   })
+  if(req.body.Role == "Patient"){
+    console.log("new patient");
+    var patient = new Patient({
+      height : req.body.height
+    });
+    patient.save();
+    user._patient= patient._id;
+  }
+  else if (req.body.Role == "Doctor"){
+    console.log("new Doctor");
+    var doctor = new Doctor({
+      Speciality: req.body.Speciality,
+      OfficeAddress: req.body.OfficeAddress,
+      ProfessionalCardNumber: req.body.ProfessionalCardNumber,
+      Insurance: req.body.Insurance,
+      LaborTime: req.body.LaborTime,
+      Description: req.body.Description,
+      ActsAndCare: req.body.ActsAndCare
+
+    });
+    doctor.save();
+    user._doctor= doctor._id;
+  }
+  else if (req.body.Role == "Assistant"){
+    console.log("new Assistant");
+    var assistant = new Assistant({
+      Speciality: req.body.Speciality,
+      Description: req.body.Description,
+      ActsAndCare: req.body.ActsAndCare
+    });
+    assistant.save();
+    user._assistant= assistant._id;
+  }
+  user.Role = req.body.Role;
   user.save();
   res.status(200).send(user);
 })
@@ -36,13 +73,30 @@ router.post('/addUser', async function (req, res, next) {
 router.post("/login", async (req,res)=>{
   try{
     const {Email,Password} = req.body;
+    var restUserInfo = null;
     if(!(Email && Password)){
       res.status(400).send("All input is required");
     }
     const user = await User.findOne({Email});
     if(user&&(await bcrypt.compare(Password,user.Password))){
+      if(user.Role == "Patient"){
+        restUserInfo = user._patient;
+      }
+      else if(user.Role == "Doctor"){
+        restUserInfo = user._doctor;
+
+      }
+      else if(user.Role == "Assistant"){
+        restUserInfo = user._assistant;
+
+      }
       const token = jwt.sign(
-          { user_id: user._id, Email },
+          {
+            user_id: user._id,
+            Email,
+            Role: user.Role,
+            restUserInfo : restUserInfo
+          },
           process.env.JWT_KEY,
           {
             expiresIn: "2h",

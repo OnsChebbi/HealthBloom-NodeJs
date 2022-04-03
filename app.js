@@ -4,13 +4,13 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require('cors');
-
 // connection to DataBase
 var mongoose = require("mongoose");
 var config = require('./database/db.json');
 mongoose.connect(config.mongo.uri,{
-	useNewUrlParser: true,
-	useUnifiedTopology: true},
+		useFindAndModify: false,
+		useNewUrlParser: true,
+		useUnifiedTopology: true},
 	()=> console.log('data base connection success')
 )
 
@@ -30,6 +30,7 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);

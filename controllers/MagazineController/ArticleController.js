@@ -60,10 +60,10 @@ exports.getComments=async (request,response)=>{
         response.send(comments)
 
     }
-catch(error){
-    response.json({success:false,message:error});
+    catch(error){
+        response.json({success:false,message:error});
 
-}
+    }
 }
 
 exports.addArticleController=async (request,response)=>{
@@ -119,8 +119,6 @@ exports.likeArticle=async (request,response)=>{
         response.json({success:false,message:error});
     
     }
-
-
 }
 
 

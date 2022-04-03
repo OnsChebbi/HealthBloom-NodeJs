@@ -83,14 +83,13 @@ exports.deleteForumSection = (id) => {
 } 
 
 
-exports.addForumSection = (title, description, author, image) => {
+exports.addForumSection = (title, description, image) => {
     return new Promise((resolve, reject) => {
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
             console.log("1")
             let section = new ForumSection({
                 title: title,
                 description: description,
-                author: author,
                 image: image
 
             })

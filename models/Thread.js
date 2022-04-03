@@ -5,34 +5,37 @@ var ObjectId = require('mongoose').Types.ObjectId;
 const current = new Date();
 const date = `${current.getDate()}/${current.getMonth() + 1}/${current.getFullYear()}`;
 
-let schemaThreadContent = mongoose.Schema({
-    body: {
+let schemaThread = mongoose.Schema({
+    title: {
         type: String,
         required: true
     },
-
+    body: {
+        type: String,
+        required: true
+    }
 })
 
-let ThreadContent = mongoose.model('threadContent', schemaThreadContent)
+let Thread = mongoose.model('thread', schemaThread)
 let url = 'mongodb+srv://nosnos:healthbloompw@healthbloom.b38oy.mongodb.net/healthbloom';
 
 
-//Retrieve All Contents
-exports.getAllThreadContents = () => {
+//Retrieve All Threads
+exports.getAllThreads = () => {
 
     return new Promise((resolve, reject) => {
         console.log("new promise")
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(
             () => {
                 console.log("databse connected")
-                //Find all sections
-                return ThreadContent.find();
+                //Find all threads
+                return Thread.find();
             }
         )
-            .then(sections => {
+            .then(threads => {
                 //resolve the result of the promise
-                resolve(sections)
-                console.log(sections)
+                resolve(threads)
+                console.log(threads)
 
             })
             //catches errors
@@ -42,29 +45,29 @@ exports.getAllThreadContents = () => {
 }
 
 
-exports.getOneThreadContent = (id) => {
+exports.getOneThread = (id) => {
     return new Promise((resolve, reject) => {
-        var idContent = mongoose.Types.ObjectId(id)
+        var idThread = mongoose.Types.ObjectId(id)
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
-            return ThreadContent.findById(idContent);
+            return Thread.findById(idThread);
 
-        }).then(sections => {
-            resolve(sections)
-            console.log(sections)
+        }).then(threads => {
+            resolve(threads)
+            console.log(threads)
 
         }).catch(err => reject(err))
 
     })
 }
 
-exports.deleteThreadContent = (id) => {
+exports.deleteThread = (id) => {
     console.log('promise delete')
-    var idContent = mongoose.Types.ObjectId(id)
+    var idThread = mongoose.Types.ObjectId(id)
 
     return new Promise((resolve, reject) => {
 
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
-            return ThreadContent.findOneAndRemove({ _id: idContent })
+            return Thread.findOneAndRemove({ _id: idThread })
 
         }).then(() => {
 
@@ -76,16 +79,17 @@ exports.deleteThreadContent = (id) => {
 } 
 
 
-exports.addThreadContent = (body) => {
+exports.addThread = (title, body) => {
     return new Promise((resolve, reject) => {
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
             console.log("1")
-            let section = new ThreadContent({
-                body:body
+            let thread = new Thread({
+                title: title,
+                body: body
 
             })
             console.log("before insert")
-            return section.save()
+            return thread.save()
 
         })
     })

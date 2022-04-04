@@ -1,39 +1,30 @@
-# HealthBloom-NodeJs
-## Table of contents
-* [General info](#general-info)
-* [Was made by :](#Made-by)
-* [Technologies](#technologies)
-* [Setup](#setup)
+# Goalsetter MERN app
 
-## General info
-This project is an AI-Health Care website.
-It's an efficient and performant web application that matches patients and doctors according to symptoms and geographical location, our application provides privacy and security since it is based on blockchain technology.
+This is the goalsetter app from the [Learn the MERN Stack](https://www.youtube.com/watch?v=-0exw-9YJBo) series on YouTube.
 
-## Made-by
-this project was made by:
-* Ons Chebbi
-* Feriel Hakim
-* Wassim Benfraj
-* Feres Ben Hamed
-* Adam El Amri
-* Ahmed Touil
+## Usage
 
-	
-## Technologies
-Project is created with:
-* Node Js
-* Express Js
-* MongoDB
-* BlockChain
+Rename the .envexample to .env and add your MONGO_URI
 
-	
-## Setup
-To run this project, use:
+### Install dependencies
 
 ```
+# Backend deps
 npm install
 
-set DEBUG-myapp:*
-
-npm start
+# Frontend deps
+cd frontend
+npm install
 ```
+
+### Run Server
+
+```
+npm run server
+```
+
+## Demo
+
+I am not sure how long this will be up
+
+https://mernappbrad.herokuapp.com/

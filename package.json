@@ -1,39 +1,28 @@
 {
-  "name": "healthbloom",
-  "version": "0.0.0",
-  "private": true,
+  "name": "mern-tutorial",
+  "version": "1.0.0",
+  "description": "Goalsetter app for youtube tutorial",
+  "main": "server.js",
   "scripts": {
-    "devStart": "nodemon ./bin/www",
-    "start": "node ./bin/www"
+    "start": "node backend/server.js",
+    "server": "nodemon backend/server.js",
+    "client": "npm start --prefix frontend",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix frontend && npm run build --prefix frontend"
   },
-  "author": "Binary Brains",
+  "author": "Brad Traversy",
+  "license": "MIT",
   "dependencies": {
-    "bcrypt": "^5.0.1",
-    "cookie-parser": "~1.4.4",
-    "cors": "^2.8.5",
-    "debug": "~2.6.9",
-    "dotenv": "^16.0.0",
-    "ejs": "^3.1.6",
-    "express": "~4.16.1",
-    "http-errors": "~1.6.3",
-    "jade": "~1.11.0",
+    "bcryptjs": "^2.4.3",
+    "colors": "^1.4.0",
+    "dotenv": "^15.0.0",
+    "express": "^4.17.2",
+    "express-async-handler": "^1.2.0",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.11.15",
-    "morgan": "~1.9.1",
-    "path": "^0.12.7"
+    "mongoose": "^6.1.9"
   },
-  "description": "* [General info](#general-info)\r * [Was made by :](#Made-by)\r * [Technologies](#technologies)\r * [Setup](#setup)",
-  "main": "app.js",
   "devDependencies": {
+    "concurrently": "^7.0.0",
     "nodemon": "^2.0.15"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/OnsChebbi/HealthBloom-NodeJs.git"
-  },
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/OnsChebbi/HealthBloom-NodeJs/issues"
-  },
-  "homepage": "https://github.com/OnsChebbi/HealthBloom-NodeJs#readme"
+  }
 }

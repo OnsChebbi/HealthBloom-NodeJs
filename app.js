@@ -16,10 +16,12 @@ mongoose.connect(config.mongo.uri,{
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var articleRouter= require('./routes/MagazineRouter/articleRouter');
 
 var app = express();
 
 // cross origin allow
+app.set('views', path.join(__dirname, 'views'));
 app.use(cors());
 
 // view engine setup
@@ -30,10 +32,12 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.set('view engine', 'ejs');
 
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
+app.use('/articles', articleRouter);
 app.use('/users', usersRouter);
 
 

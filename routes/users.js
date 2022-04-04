@@ -138,4 +138,53 @@ router.post('/addPatient', async function (req, res, next) {
   res.status(200).send(user);
 })
 
+/* GET assistants listing. */
+router.get('/getassistants', function (req, res) {
+  Assistant.find(function(err,data) {
+    if(err) throw err;
+    res.status(200).send(data);
+
+  });
+})
+
+/* GET assistant by id. */
+router.get('/getassistants/:id', (req, res)=> {
+  Assistant.findById(req.params.id,(err,data)=> {
+    if(err) throw err;
+    res.status(200).send(data);
+
+  });
+  //res.send(assistants);
+})
+
+/* GET assistant by id. */
+router.put('/editassistant/:id', async (req, res) => {
+
+    console.log("edit Assistant");
+    const emp = {
+      Speciality: req.body.Speciality,
+      Description: req.body.Description,
+      ActsAndCare: req.body.ActsAndCare
+    };
+    Assistant.findByIdAndUpdate(req.params.id, { $set: emp }, { new: true }, (err, data) => {
+      if(err) throw err;
+      res.status(200).send(data);
+    });
+    //User._assistant = Assistant._id;
+
+
+
+})
+
+/* delete assistant by id. */
+router.delete('/deleteassistants/:id', (req, res)=> {
+  Assistant.findByIdAndRemove(req.params.id,(err,data)=> {
+    if(err) throw err;
+    res.status(200).send(data);
+
+
+  });
+  //res.send(assistants);
+})
+
 module.exports = router;

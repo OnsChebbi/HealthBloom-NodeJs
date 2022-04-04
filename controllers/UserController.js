@@ -13,16 +13,34 @@ exports.getAll = async (req,res) =>{
     });
 }
 
-exports.getAllPatients = async (req,res) =>{
-    var patients = [Patient];
-    await User.find(function (err,data){
-        for( var i =0 ; i<data.length;i++){
-            if(data[i].Role === "Patient"){
+// exports.getAllPatients = async (req,res) =>{
+//     var patients = [Patient];
+//     await User.find(function (err,data){
+//         for( var i =0 ; i<data.length;i++){
+//             if(data[i].Role === "Patient"){
+//                 patients.push(data[i]);
+//             }
+//         }
+//     });
+//     res.status(200).send(patients);
+// }
+
+exports.getPatients = async (callback) =>{
+    var patients = [];
+    await User.find(function (err, data) {
+        for (var i = 0; i < data.length; i++) {
+            if (data[i].Role === "Patient") {
                 patients.push(data[i]);
             }
         }
     });
-    res.status(200).send(patients);
+    return callback(null,patients);
+}
+exports.getAllPatients = async (req,res) => {
+     this.getPatients(function (err, data) {
+        if (err) throw err;
+        res.status(200).send({users: data, message: "success"});
+    });
 }
 
 exports.addUser = async (req,res) =>{
@@ -114,4 +132,12 @@ exports.login = async (req,res)=>{
     }catch (err){
         console.log(err);
     }
+}
+
+//update user
+
+//delete user
+exports.deleteUser = (req,res) =>{
+    var id = req.params.id;
+
 }

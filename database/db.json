@@ -1,0 +1,5 @@
+{
+  "mongo":{
+    "uri" : "mongodb+srv://nosnos:healthbloompw@healthbloom.b38oy.mongodb.net/healthbloom"
+  }
+}

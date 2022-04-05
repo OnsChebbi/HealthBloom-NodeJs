@@ -1,2 +1,8 @@
-node_modules
-.env
+
+/node_modules/
+
+
+# IDEs and editors
+
+/.idea
+/node_modules/

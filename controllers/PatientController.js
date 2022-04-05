@@ -1,5 +1,6 @@
 const Patient = require('../models/Patient');
-const {getPatient} = require("./PatientController");
+const User = require('../models/User');
+const userController = require('../controllers/UserController');
 
 // async function getOne(req, res, next) {
 //     var id = req.params.id;
@@ -33,8 +34,22 @@ exports.updatePatientAction = async (req, res) => {
 
 exports.deletePatient = async (req,res) => {
     var id = req.params.id;
+    await Patient.findByIdAndRemove({_id:id},(err)=>{
+        if (err) throw err;
+    })
+    await userController.getPatients(function (err,data){
+        if(err) throw err;
+        for (var i =0 ; i<data.length;i++){
+            console.log(i);
+            console.log(data[i]._patient);
+            if(data[i]._patient.equals(id)){
+                console.log("hnee");
+                id= data[i]._id;
+            }
+        }
+    });
     console.log(id);
-    Patient.findByIdAndRemove({_id:id},(err)=>{
+    await User.findByIdAndRemove({_id:id},(err) =>{
         if (err) throw err;
     })
     res.status(200).send("delete successful");

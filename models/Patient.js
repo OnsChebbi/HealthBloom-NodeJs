@@ -7,7 +7,6 @@ var patient = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'user'
     },
-    height : Number,
     appointments : [
         {
             Date : Date,
@@ -20,7 +19,10 @@ var patient = new Schema({
     Cart : {
         type: Schema.Types.ObjectId,
         ref: 'cart'
-    }
+    },
+    height : Number,
+    weight : Number,
+    IMC : Number
 })
 
 module.exports = mongoose.model('patient',patient);

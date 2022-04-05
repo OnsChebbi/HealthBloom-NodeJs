@@ -10,10 +10,12 @@ var Assistant = require('../models/Assistant');
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-router.get('/',userController.getAll);
+router.get('/',authenticateToken,userController.getAll);
 router.post('/addUser',userController.addUser);
 router.post("/login", userController.login);
 router.get('/updatePatient/:id', patientController.updatePatientAction);
+router.get('/updateUser/:id',userController.updateUser);
+router.get('/deleteUser/:id',userController.deleteUser);
 router.get('/getAllPatients',userController.getAllPatients);
 router.get('/deletePatient/:id',patientController.deletePatient);
 

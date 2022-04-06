@@ -11,10 +11,14 @@ var doctor = new Schema(
     LaborTime: String,
     Description: String,
     ActsAndCare: String,
+    Status: {
+      type: String,
+      enum: ["Pending", "Accepted"],
+      default: "Pending",
+    },
   },
   {
     timestamps: true,
   }
 );
-
 module.exports = mongoose.model("doctor", doctor);

@@ -1,43 +1,47 @@
-var util = require('util');
-const mongoose = require('mongoose');
+var util = require("util");
+const mongoose = require("mongoose");
 var Schema = mongoose.Schema;
-const {Db} = require ('mongodb');
+const { Db } = require("mongodb");
 
-var user = new Schema({
+var user = new Schema(
+  {
     //for all users
-    FirstName : String,
-    LastName : String,
-    Email : String,
-    Password : String,
-    Address : String,
-    Picture : String,
-    Phone : Number,
-    BirthDate : Date,
-    Token : String,
-    Role : {
-        type : String,
-        enum : ["Patient","Doctor","Assistant"],
-        default : "Patient"
+    FirstName: String,
+    LastName: String,
+    Email: String,
+    Password: String,
+    Address: String,
+    Picture: String,
+    Phone: Number,
+    BirthDate: Date,
+    Token: String,
+    Role: {
+      type: String,
+      enum: ["Patient", "Doctor", "Assistant"],
+      default: "Patient",
     },
-    _patient:{
-        type: Schema.Types.ObjectId,
-        ref: 'patient'
+    _patient: {
+      type: Schema.Types.ObjectId,
+      ref: "patient",
     },
-    _doctor:{
-        type: Schema.Types.ObjectId,
-        ref: 'doctor'
+    _doctor: {
+      type: Schema.Types.ObjectId,
+      ref: "doctor",
     },
-    _assistant:{
-        type: Schema.Types.ObjectId,
-        ref: 'assistant'
-    }
-
-});
+    _assistant: {
+      type: Schema.Types.ObjectId,
+      ref: "assistant",
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
 //module.exports
 
-module.exports = mongoose.model('user',user);
- //let User
+module.exports = mongoose.model("user", user);
+//let User
 //
 // let url = 'mongodb+srv://nosnos:healthbloompw@healthbloom.b38oy.mongodb.net/healthbloom';
 //
@@ -58,4 +62,3 @@ module.exports = mongoose.model('user',user);
 //             .catch(err => reject(err))
 //     })
 // }
-

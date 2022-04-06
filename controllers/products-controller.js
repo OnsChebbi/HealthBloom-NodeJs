@@ -4,6 +4,8 @@ const HttpError = require("../models/http-error");
 const Product = require('../models/product');
 const Review = require('../models/review');
 const mongoose = require("mongoose");
+const multiparty = require('multiparty');
+
 
 
 
@@ -41,6 +43,7 @@ const getProducts = async (req, res, next) => {
 const createProduct = async (req, res, next) => {
 
     const errors = validationResult(req);
+    console.log(errors);
     if (!errors.isEmpty()) {
         console.log(errors.errors[0].msg);
         // const error = new HttpError('Invalid inputs passed, please check your data.', 422);
@@ -55,7 +58,7 @@ const createProduct = async (req, res, next) => {
         price,
         quantity: quantity,
         category,
-        image: 'https://upload.wikimedia.org/wikipedia/commons/d/df/NYC_Empire_State_Building.jpg',
+        image: req.file.path,
         reviews: []
     });
 

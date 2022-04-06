@@ -39,11 +39,12 @@ app.set('view engine', 'jade');
 
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+
 app.use(cookieParser());
 app.set('view engine', 'ejs');
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads/images', express.static(path.join('uploads', 'images')));
 
 app.use('/api/products', productsRoutes);
 app.use('/api/reviews', reviewsRoutes);

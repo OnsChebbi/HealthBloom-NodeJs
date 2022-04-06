@@ -25,7 +25,10 @@
     "mongoose": "^5.11.15",
     "mongoose-unique-validator": "  ^2.0.1",
     "morgan": "~1.9.1",
-    "path": "^0.12.7"
+    "multer": "^1.4.4",
+    "multiparty": "^4.2.3",
+    "path": "^0.12.7",
+    "uuid": "^8.3.2"
   },
   "description": "* [General info](#general-info)\r * [Was made by :](#Made-by)\r * [Technologies](#technologies)\r * [Setup](#setup)",
   "main": "app.js",

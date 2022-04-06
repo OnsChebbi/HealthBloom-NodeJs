@@ -1,5 +1,7 @@
 const express = require('express');
 const {check} = require('express-validator');
+const fileUpload = require('../middleware/file-upload');
+
 
 const productsControllers = require('../controllers/products-controller')
 
@@ -13,6 +15,7 @@ router.get('/:pid', productsControllers.getProductById);
 // router.get('/user/:uid', placesControllers.getPlacesByUserId);
 
 router.post('/',
+    fileUpload.single('image'),
     [
         check('name')
             .not()

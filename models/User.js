@@ -14,6 +14,10 @@ var user = new Schema({
     Phone : Number,
     BirthDate : Date,
     Token : String,
+    newsLetter : {
+        type : Boolean,
+        default : true
+    },
     Role : {
         type : String,
         enum : ["Patient","Doctor","Assistant"],

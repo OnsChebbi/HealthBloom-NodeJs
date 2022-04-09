@@ -10,4 +10,6 @@ router.post('/addArticle',articleController.addArticleController);
 router.get('/comments/:id',articleController.getComments);
 router.post('/addComment',articleController.addCommentToArticle);
 router.put('/likeArticle/:id',articleController.likeArticle);
+router.put('/unlikeArticle/:id',articleController.unlikeArticle);
+router.put('/promoteArticle/:id',articleController.promoteArticle);
 module.exports = router;

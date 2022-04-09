@@ -127,6 +127,43 @@ exports.likeArticle = (id) => {
 
 }
 
+exports.unlikeArticle = (id) => {
+    var ida = mongoose.Types.ObjectId(id)
+
+
+    return new Promise((resolve, reject) => {
+
+        mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
+            return Article.findOneAndUpdate({ _id: ida }, { $inc: { nbLikes: -1 } })
+
+        }).then(() => {
+
+            resolve(true)
+
+        }).catch(err => reject(err))
+
+    })
+
+}
+
+exports.promoteArticle = (id) => {
+    var ida = mongoose.Types.ObjectId(id)
+
+
+    return new Promise((resolve, reject) => {
+
+        mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
+            return Article.findOneAndUpdate({ _id: ida }, { promoted: true})
+
+        }).then(() => {
+
+            resolve(true)
+
+        }).catch(err => reject(err))
+
+    })
+
+}
 
 exports.incrementComments = (id) => {
     var ida = mongoose.Types.ObjectId(id)

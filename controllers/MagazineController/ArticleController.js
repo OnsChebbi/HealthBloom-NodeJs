@@ -123,6 +123,38 @@ exports.likeArticle=async (request,response)=>{
 
 }
 
+exports.unlikeArticle=async (request,response)=>{
+    
+    let id=request.params.id;
+     
+     try{
+         Article.unlikeArticle(id)
+         response.json({success:true,message:"Article unliked successfully"});
+ 
+     }
+     catch(error){
+         response.json({success:false,message:error});
+     
+     }
+ 
+ 
+ }
 
 
+exports.promoteArticle=async (request,response)=>{
+    
+    let id=request.params.id;
+     
+     try{
+         Article.promoteArticle(id)
+         response.json({success:true,message:"Article promoted successfully"});
+ 
+     }
+     catch(error){
+         response.json({success:false,message:error});
+     
+     }
+ 
+ 
+ }
 

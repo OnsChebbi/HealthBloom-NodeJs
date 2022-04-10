@@ -98,6 +98,25 @@ exports.addArticleController=async (request,response)=>{
 
 }
 
+exports.updateArticleController=async (request,response)=>{
+
+    console.log(request.body)
+    id=request.body.id
+    title=request.body.title;
+    description=request.body.description;
+    image= request.body.image;
+    try{
+        Article.updateArticle(id,title,description,image);
+        response.json({success:true,message:"Article updated successfully"});
+
+    }
+    catch(error){
+        response.json({success:false,message:error});
+    
+    }
+
+
+}
 
 exports.addCommentToArticle=async (request,response)=>{
     console.log(request.body)
@@ -152,6 +171,22 @@ exports.unlikeArticle=async (request,response)=>{
      }
  
  
+ }
+
+
+ exports.subscribe=async (request,response)=>{
+    
+    let id=request.params.id;
+     
+     try{
+         Article.subscribeNewsLetter(id)
+         response.json({success:true,message:"Subscribed successfully"});
+ 
+     }
+     catch(error){
+         response.json({success:false,message:error});
+     
+     }
  }
 
 

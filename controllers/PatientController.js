@@ -53,8 +53,8 @@ exports.updatePatientAction = async (req, res) => {
     User.findByIdAndUpdate({_id:id},user,(err) =>{
         if (err) throw err;
     })
-
-    res.status(200).send(patient+user);
+    //sending the response back
+    res.status(200).send({user:  user,patient: patient, message: "success"});
 
 }
 

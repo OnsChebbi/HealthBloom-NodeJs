@@ -17,7 +17,7 @@ router.get('/getById/:id', userController.getById);
 router.get('/updateUser/:id',userController.updateUser);
 router.get('/deleteUser/:id',userController.deleteUser);
 router.get('/getAllPatients',userController.getAllPatients);
-router.get('/updatePatient/:id', patientController.updatePatientAction);
+router.post('/updatePatient/:id', patientController.updatePatientAction);
 router.get('/deletePatient/:id',patientController.deletePatient);
 
 function authenticateToken(req,res,next) {

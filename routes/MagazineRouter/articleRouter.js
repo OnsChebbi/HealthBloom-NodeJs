@@ -10,4 +10,5 @@ router.post('/addArticle',articleController.addArticleController);
 router.get('/comments/:id',articleController.getComments);
 router.post('/addComment',articleController.addCommentToArticle);
 router.put('/likeArticle/:id',articleController.likeArticle);
+
 module.exports = router;

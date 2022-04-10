@@ -10,6 +10,7 @@ var cors = require('cors');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var articleRouter= require('./routes/MagazineRouter/articleRouter');
+var forumRouter= require('./routes/ForumRouter/forumRouter');
 
 
 var app = express();
@@ -28,9 +29,10 @@ app.set('view engine', 'ejs');
 
 //Our static folder
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/articles', articleRouter);
 
+app.use('/articles', articleRouter);
 app.use('/users', usersRouter);
+app.use('/forum', forumRouter);
 
 //Connecting to the Mongo database
 app.get('/',(req,res)=>{

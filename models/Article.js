@@ -97,7 +97,6 @@ exports.getAuthorDetails = (id) => {
 
         }).then(author => {
             resolve(author)
-            console.log(author)
 
         }).catch(err => reject(err))
 
@@ -173,6 +172,25 @@ exports.promoteArticle = (id) => {
 
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
             return Article.findOneAndUpdate({ _id: ida }, { promoted: true})
+
+        }).then(() => {
+
+            resolve(true)
+
+        }).catch(err => reject(err))
+
+    })
+
+}
+
+exports.updateArticle = (id,title,description,image) => {
+    var ida = mongoose.Types.ObjectId(id)
+
+
+    return new Promise((resolve, reject) => {
+
+        mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
+            return Article.findOneAndUpdate({ _id: ida }, { title: title, description:description,image:image})
 
         }).then(() => {
 
@@ -291,5 +309,22 @@ exports.best = () => {
 
 }
 
+exports.subscribeNewsLetter = (id) => {
+    var ida = mongoose.Types.ObjectId(id)
+
+    return new Promise((resolve, reject) => {
+
+        mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
+            return User.findOneAndUpdate({ _id: ida }, { newsLetter: true})
+
+        }).then(() => {
+
+            resolve(true)
+
+        }).catch(err => reject(err))
+
+    })
+
+}
 
 

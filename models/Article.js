@@ -1,6 +1,8 @@
 const { Db } = require('mongodb');
 const mongoose = require('mongoose');
 var ObjectId = require('mongoose').Types.ObjectId;
+var nodemailer = require('nodemailer');
+const User = require('./User');
 
 const current = new Date();
 const date = `${current.getDate()}/${current.getMonth() + 1}/${current.getFullYear()}`;
@@ -87,6 +89,23 @@ exports.getOneArticleDetails = (id) => {
 
 }
 
+exports.getAuthorDetails = (id) => {
+    return new Promise((resolve, reject) => {
+        var idUser = mongoose.Types.ObjectId(id)
+        mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
+            return User.findById(idUser);
+
+        }).then(author => {
+            resolve(author)
+            console.log(author)
+
+        }).catch(err => reject(err))
+
+    })
+
+}
+
+
 
 exports.deleteArticle = (id) => {
     console.log('promise delete')
@@ -126,6 +145,43 @@ exports.likeArticle = (id) => {
 
 }
 
+exports.unlikeArticle = (id) => {
+    var ida = mongoose.Types.ObjectId(id)
+
+
+    return new Promise((resolve, reject) => {
+
+        mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
+            return Article.findOneAndUpdate({ _id: ida }, { $inc: { nbLikes: -1 } })
+
+        }).then(() => {
+
+            resolve(true)
+
+        }).catch(err => reject(err))
+
+    })
+
+}
+
+exports.promoteArticle = (id) => {
+    var ida = mongoose.Types.ObjectId(id)
+
+
+    return new Promise((resolve, reject) => {
+
+        mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
+            return Article.findOneAndUpdate({ _id: ida }, { promoted: true})
+
+        }).then(() => {
+
+            resolve(true)
+
+        }).catch(err => reject(err))
+
+    })
+
+}
 
 exports.incrementComments = (id) => {
     var ida = mongoose.Types.ObjectId(id)
@@ -147,6 +203,25 @@ exports.incrementComments = (id) => {
 
 }
 
+exports.decrementComments = (id) => {
+    var ida = mongoose.Types.ObjectId(id)
+
+    console.log('promise like')
+
+    return new Promise((resolve, reject) => {
+
+        mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
+            return Article.findOneAndUpdate({ _id: ida }, { $inc: { nbComments: -1 } })
+
+        }).then(() => {
+
+            resolve(true)
+
+        }).catch(err => reject(err))
+
+    })
+
+}
 
 exports.addArticle = (title, description, author, image) => {
     return new Promise((resolve, reject) => {
@@ -159,8 +234,29 @@ exports.addArticle = (title, description, author, image) => {
                 image: image
 
             })
-            console.log("before insert")
-            return article.save()
+            var mailOptions = {
+                from: 'ons.chebbi@esprit.tn',
+                to:"ons.chebbi@esprit.tn",
+                subject: 'A new article has been added!',
+                text: title+ "Read more.."
+              };
+            var transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: 'ons.chebbi@esprit.tn',
+                    pass: '4twintwin'
+                }
+              });
+              
+             
+              transporter.sendMail(mailOptions, function(error, info){
+                if (error) {
+                  console.log(error);
+                } else {
+                  console.log('Email sent: ' + info.response);
+                }
+              });
+              return article.save()
 
         })
     })
@@ -189,3 +285,6 @@ exports.best = () => {
     })
 
 }
+
+
+

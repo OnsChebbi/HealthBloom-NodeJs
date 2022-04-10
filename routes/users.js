@@ -13,6 +13,7 @@ const jwt = require("jsonwebtoken");
 router.get('/',authenticateToken,userController.getAll);
 router.post('/addUser',userController.addUser);
 router.post("/login", userController.login);
+router.get('/:id',userController.getById);
 router.get('/updatePatient/:id', patientController.updatePatientAction);
 router.get('/updateUser/:id',userController.updateUser);
 router.get('/deleteUser/:id',userController.deleteUser);

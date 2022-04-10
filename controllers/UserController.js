@@ -7,10 +7,19 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken")
 
 exports.getAll = async (req,res) =>{
+    var id = req.params.id;
     User.find(function (err,data){
         if(err) throw err;
         res.status(200).send({users:  data, message: "success"});
     });
+}
+
+exports.getById = async (req,res) =>{
+    var id = req.params.id;
+    User.findById({_id:id},function (err,data) {
+        if(err) throw err;
+        res.status(200).send(data);
+    })
 }
 
 // exports.getAllPatients = async (req,res) =>{

@@ -7,6 +7,7 @@ var cors = require('cors');
 // connection to DataBase
 var mongoose = require("mongoose");
 var config = require('./database/db.json');
+
 mongoose.connect(config.mongo.uri,{
 		useFindAndModify: false,
 		useNewUrlParser: true,

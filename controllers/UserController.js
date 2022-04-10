@@ -22,17 +22,17 @@ exports.getById = async (req,res) =>{
     })
 }
 
-// exports.getAllPatients = async (req,res) =>{
-//     var patients = [Patient];
-//     await User.find(function (err,data){
-//         for( var i =0 ; i<data.length;i++){
-//             if(data[i].Role === "Patient"){
-//                 patients.push(data[i]);
-//             }
-//         }
-//     });
-//     res.status(200).send(patients);
-// }
+exports.getAllPatients = async (req,res) =>{
+    var patients = [Patient];
+    await User.find(function (err,data){
+        for( var i =0 ; i<data.length;i++){
+            if(data[i].Role === "Patient"){
+                patients.push(data[i]);
+            }
+        }
+    });
+    res.status(200).send(patients);
+}
 
 exports.getPatients = async (callback) =>{
     var patients = [];
@@ -45,11 +45,17 @@ exports.getPatients = async (callback) =>{
     });
     return callback(null,patients);
 }
-exports.getAllPatients = async (req,res) => {
-     this.getPatients(function (err, data) {
-        if (err) throw err;
-        res.status(200).send({users: data, message: "success"});
-    });
+exports.getAllP = async (req,res) => {
+    console.log("hello");
+    //  this.getPatients(function (err, data) {
+    //     if (err) throw err;
+    //     res.status(200).send({users: data, message: "success"});
+    // });
+    res.status(200).send("test");
+}
+
+exports.test = async (req,res) =>{
+    console.log("this test works");
 }
 
 exports.addUser = async (req,res) =>{

@@ -20,15 +20,41 @@ exports.getPatient = async (req, res) => {
 }
 
 exports.updatePatientAction = async (req, res) => {
+    //get the patient id from req
     var id = req.params.id;
-
     var patient = {
-        height : req.body.height
+        height : req.body.height,
+        weight: req.body.weight,
+        BloodType: req.body.BloodType
     }
+    //update the patient entity
     Patient.findByIdAndUpdate({_id:id}, patient,(err) =>{
         if (err) throw err;
     });
-    res.status(200).send(patient);
+    //look for the related user id to update it too
+    await userController.getPatients(function (err,data){
+        if(err) throw err;
+        for (var i =0 ; i<data.length;i++){
+            console.log(i);
+            console.log(data[i]._patient);
+            if(data[i]._patient.equals(id)){
+                console.log("hnee");
+                id= data[i]._id;
+            }
+        }
+    });
+    var user = {
+        Email: req.body.Email,
+        Address: req.body.Address,
+        Phone: req.body.Phone,
+        BirthDate: req.body.BirthDate,
+        newsLetter: req.body.newsLetter
+    }
+    User.findByIdAndUpdate({_id:id},user,(err) =>{
+        if (err) throw err;
+    })
+
+    res.status(200).send(patient+user);
 
 }
 

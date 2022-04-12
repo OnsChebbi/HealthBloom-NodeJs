@@ -14,7 +14,9 @@ router.get('/',authenticateToken,userController.getAll);
 router.post('/addUser',userController.addUser);
 router.post("/login", userController.login);
 router.get('/getById/:id', userController.getById);
-router.get('/updateUser/:id',userController.updateUser);
+router.get('/updateUser/:id', userController.updateUser);
+router.post('/forgetPassword', userController.forgetPassword);
+
 router.get('/deleteUser/:id',userController.deleteUser);
 router.get('/getAllPatients',userController.getAllPatients);
 router.post('/updatePatient/:id', patientController.updatePatientAction);

@@ -13,6 +13,11 @@ var user = new Schema({
     Picture : String,
     Phone : Number,
     BirthDate : Date,
+    Sex : {
+        type : String,
+        enum : ["male","female","unknown"],
+        default : "unknown"
+    },
     Token : String,
     newsLetter : {
         type : Boolean,

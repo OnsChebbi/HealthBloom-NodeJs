@@ -5,6 +5,20 @@ const Doctor = require('../models/Doctor');
 const Assistant = require('../models/Assistant');
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken")
+const nodemailer = require("nodemailer");
+
+async function verifyMail(email) {
+    var x = true;
+    await User.find(function (err,data){
+        for (var i = 0; i < data.length; i++){
+            if (data[i].Email === email) {
+                console.log("lkytt nafs l mail and user ekhor");
+                x = false;
+            }
+        }
+    })
+    return x;
+}
 
 exports.getAll = async (req,res) =>{
     User.find(function (err,data){
@@ -15,23 +29,23 @@ exports.getAll = async (req,res) =>{
 
 exports.getById = async (req,res) =>{
     var id = req.params.id;
-    User.findById({_id:id},function (err,data) {
-        if(err) throw err;
-        res.status(200).send(data);
-    })
+    var user = await User.findById({_id:id});
+    var patient = await Patient.findById({_id:user._patient});
+    var obj = Object.assign({user}, {patient});
+    res.status(200).send(obj);
 }
 
-exports.getAllPatients = async (req,res) =>{
-    var patients = [Patient];
-    await User.find(function (err,data){
-        for( var i =0 ; i<data.length;i++){
-            if(data[i].Role === "Patient"){
-                patients.push(data[i]);
-            }
-        }
-    });
-    res.status(200).send(patients);
-}
+// exports.getAllPatients = async (req,res) =>{
+//     var patients = [Patient];
+//     await User.find(function (err,data){
+//         for( var i =0 ; i<data.length;i++){
+//             if(data[i].Role === "Patient"){
+//                 patients.push(data[i]);
+//             }
+//         }
+//     });
+//     res.status(200).send(patients);
+// }
 
 exports.getPatients = async (callback) =>{
     var patients = [];
@@ -204,7 +218,7 @@ exports.updateUser = async (req, res) => {
             if (err) throw err;
         })
     }
-    res.status(200).send("delete successful");
+    res.status(200).send("update successful");
 
 }
 //delete user
@@ -241,3 +255,36 @@ exports.deleteUser = async (req,res) =>{
     }
     res.status(200).send("delete successful");
 }
+
+//forget password
+exports.forgetPassword = async (req,res) =>{
+    const email= req.body.email;
+    console.log(email);
+    //email sender information
+    let transporter = nodemailer.createTransport({
+        service: 'gmail', // true for 465, false for other ports
+        auth: {
+            user: 'feres.benhamed99@gmail.com', // generated ethereal user
+            pass: 'Dunkyfyzel1', // generated ethereal password
+        },
+    });
+
+    //send email if user exists
+    if(await verifyMail()) {
+        // send mail with defined transport object
+        let info = await transporter.sendMail({
+            from: 'feres.benhamed99@gmail.com', // sender address
+            to: "feres.benhamed@esprit.tn ", // list of receivers
+            subject: "you forgot your account's password ?", // Subject line
+            text: "hello we received a request that you have forgot your account's password," +
+                "if true you can change your password via this link  " +
+                "if this was not requested by you please report to our team.", // plain text body
+            html: "<b>hello we received a request that you have forgot your account's password </b>" +
+                "<b>if true you can change your password via this link </b>" +
+                "<b>if this was not requested by you please report to our team.</b>", // html body
+        });
+    }
+    res.status(200).send("mail successful");
+
+}
+

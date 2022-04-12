@@ -25,9 +25,11 @@ exports.updatePatientAction = async (req, res) => {
     var patient = {
         height : req.body.height,
         weight: req.body.weight,
-        BloodType: req.body.BloodType
+        BloodType: req.body.BloodType,
+        IMC : (req.body.height/req.body.weight)
     }
     //update the patient entity
+    console.log(patient.IMC);
     Patient.findByIdAndUpdate({_id:id}, patient,(err) =>{
         if (err) throw err;
     });
@@ -44,13 +46,16 @@ exports.updatePatientAction = async (req, res) => {
         }
     });
     var user = {
+        FirstName: req.body.FirstName,
+        LastName: req.body.LastName,
+        Sex: req.body.Sex,
+        BirthDate: req.body.BirthDate,
         Email: req.body.Email,
         Address: req.body.Address,
         Phone: req.body.Phone,
-        BirthDate: req.body.BirthDate,
         newsLetter: req.body.newsLetter
     }
-    User.findByIdAndUpdate({_id:id},user,(err) =>{
+    User.findByIdAndUpdate({_id:id},user, { useFindAndModify: false },(err) =>{
         if (err) throw err;
     })
     //sending the response back

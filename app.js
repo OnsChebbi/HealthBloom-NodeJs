@@ -18,6 +18,7 @@ mongoose.connect(config.mongo.uri,{
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var articleRouter= require('./routes/MagazineRouter/articleRouter');
+var MedicalFileRouter = require('./routes/MedicalFileRoutes');
 
 var app = express();
 
@@ -40,6 +41,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/articles', articleRouter);
 app.use('/users', usersRouter);
+app.use('/medicalFile', MedicalFileRouter);
 
 
 //Connecting to the Mongo database

@@ -26,7 +26,8 @@
     "mongoose-unique-validator": "  ^2.0.1",
     "morgan": "~1.9.1",
     "nodemailer": "^6.7.3",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "twilio": "^3.76.1"
   },
   "description": "* [General info](#general-info)\r * [Was made by :](#Made-by)\r * [Technologies](#technologies)\r * [Setup](#setup)",
   "main": "app.js",

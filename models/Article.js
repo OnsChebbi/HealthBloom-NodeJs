@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 var ObjectId = require('mongoose').Types.ObjectId;
 var nodemailer = require('nodemailer');
 const User = require('./User');
+const MessagingResponse = require('twilio').twiml.MessagingResponse;
 
 const current = new Date();
 const date = `${current.getDate()}/${current.getMonth() + 1}/${current.getFullYear()}`;
@@ -72,7 +73,6 @@ exports.getAllArticles = () => {
     })
 
 }
-
 exports.getOneArticleDetails = (id) => {
     return new Promise((resolve, reject) => {
         var idArticle = mongoose.Types.ObjectId(id)
@@ -105,7 +105,20 @@ exports.getAuthorDetails = (id) => {
 }
 
 
+exports.getSubscribers = () => {
+    console.log("model")
+    return new Promise((resolve, reject) => {
+        mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
+            return User.find();
 
+        }).then(author => {
+            resolve(author)
+
+        }).catch(err => reject(err))
+
+    })
+
+}
 exports.deleteArticle = (id) => {
     console.log('promise delete')
     var idArticle = mongoose.Types.ObjectId(id)
@@ -171,7 +184,7 @@ exports.promoteArticle = (id) => {
     return new Promise((resolve, reject) => {
 
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
-            return Article.findOneAndUpdate({ _id: ida }, { promoted: true})
+            return Article.findOneAndUpdate({ _id: ida }, { promoted: true })
 
         }).then(() => {
 
@@ -183,14 +196,14 @@ exports.promoteArticle = (id) => {
 
 }
 
-exports.updateArticle = (id,title,description,image) => {
+exports.updateArticle = (id, title, description, image) => {
     var ida = mongoose.Types.ObjectId(id)
 
 
     return new Promise((resolve, reject) => {
 
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
-            return Article.findOneAndUpdate({ _id: ida }, { title: title, description:description,image:image})
+            return Article.findOneAndUpdate({ _id: ida }, { title: title, description: description, image: image })
 
         }).then(() => {
 
@@ -254,28 +267,28 @@ exports.addArticle = (title, description, author, image) => {
 
             })
             var mailOptions = {
-                from: 'ons.chebbi@esprit.tn',
-                to:"ons.chebbi@esprit.tn",
+                from: 'HealthBloom',
+                to: "ons.chebbi@esprit.tn",
                 subject: 'A new article has been added!',
-                text: title+ "Read more.."
-              };
+                text: title + " Read more.."
+            };
             var transporter = nodemailer.createTransport({
                 service: 'gmail',
                 auth: {
-                    user: 'ons.chebbi@esprit.tn',
-                    pass: '4twintwin'
+                    user: 'healthbloomapp@gmail.com',
+                    pass: 'binarybrains'
                 }
-              });
-              
-             
-              transporter.sendMail(mailOptions, function(error, info){
+            });
+
+
+            transporter.sendMail(mailOptions, function (error, info) {
                 if (error) {
-                  console.log(error);
+                    console.log(error);
                 } else {
-                  console.log('Email sent: ' + info.response);
+                    console.log('Email sent: ' + info.response);
                 }
-              });
-              return article.save()
+            });
+            return article.save()
 
         })
     })
@@ -288,12 +301,11 @@ exports.addArticle = (title, description, author, image) => {
 exports.best = () => {
 
     return new Promise((resolve, reject) => {
-        console.log("new promise")
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(
             () => {
                 console.log("databse connected")
                 //Find all articles
-                return Article.find().sort({nbLikes:-1}).limit(3);
+                return Article.find().sort({ nbLikes: -1 }).limit(3);
             }
         )
             .then(articles => {
@@ -309,13 +321,38 @@ exports.best = () => {
 
 }
 
+
+
 exports.subscribeNewsLetter = (id) => {
     var ida = mongoose.Types.ObjectId(id)
 
     return new Promise((resolve, reject) => {
 
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
-            return User.findOneAndUpdate({ _id: ida }, { newsLetter: true})
+
+            return User.findOneAndUpdate({ _id: ida }, { newsLetter: true })
+
+        }).then(() => {
+
+            resolve(true)
+
+
+                .then(message => console.log(message.sid));
+
+        }).catch(err => reject(err))
+
+    })
+
+
+}
+
+exports.unsubscribeNewsLetter = (id) => {
+    var ida = mongoose.Types.ObjectId(id)
+
+    return new Promise((resolve, reject) => {
+
+        mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
+            return User.findOneAndUpdate({ _id: ida }, { newsLetter: false })
 
         }).then(() => {
 
@@ -327,4 +364,28 @@ exports.subscribeNewsLetter = (id) => {
 
 }
 
+exports.sendSubscriptionSMS = (tel,name) => {
+    const accountSid = "AC433124b95f3ca73156447265c0f0ca81";
+    const authToken = "ff7d42068e0cbbd6a68a9fca2b30e41c";
+    const client = require('twilio')(accountSid, authToken);
 
+    client.messages
+        .create({
+            body: 'Congratulations '+name+'! You have been subscribed to our Newsletter! You will get a notification on you email account each time we add a new article!',
+            from: '+18453733520',
+            to: '+' + tel
+        })
+}
+
+exports.sendUnubscriptionSMS = (tel,name) => {
+    const accountSid = "AC433124b95f3ca73156447265c0f0ca81";
+    const authToken = "ff7d42068e0cbbd6a68a9fca2b30e41c";
+    const client = require('twilio')(accountSid, authToken);
+
+    client.messages
+        .create({
+            body: 'Hello '+name+'! You have been unsubscribed from our newsletter! Hope you will subscribe again soon .Our Articles are waiting for you',
+            from: '+18453733520',
+            to: '+' + tel
+        })
+}

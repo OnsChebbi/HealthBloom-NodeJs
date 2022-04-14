@@ -40,6 +40,20 @@ catch(error){
 }
 }
 
+
+exports.getAllSubscribersController=async (response)=>{
+    console.log("subscribe")
+    try{
+        let articles= await Article.getSubscribers()
+        response.send(articles)
+
+    }
+catch(error){
+    response.json({success:false,message:error});
+
+}
+}
+
 exports.topArticlesController=async (request,response)=>{
     try{
         let articles= await Article.best()
@@ -180,6 +194,8 @@ exports.unlikeArticle=async (request,response)=>{
      
      try{
          Article.subscribeNewsLetter(id)
+         let user= await Article.getAuthorDetails(id);
+         Article.sendSubscriptionSMS(user.Phone,user.FirstName)
          response.json({success:true,message:"Subscribed successfully"});
  
      }
@@ -189,6 +205,23 @@ exports.unlikeArticle=async (request,response)=>{
      }
  }
 
+
+ exports.unsubscribe=async (request,response)=>{
+    
+    let id=request.params.id;
+     
+     try{
+         Article.unsubscribeNewsLetter(id)
+         let user= await Article.getAuthorDetails(id);
+         Article.sendUnubscriptionSMS(user.Phone,user.FirstName)
+         response.json({success:true,message:"Unsubscribed successfully"});
+ 
+     }
+     catch(error){
+         response.json({success:false,message:error});
+     
+     }
+ }
 
 exports.promoteArticle=async (request,response)=>{
     

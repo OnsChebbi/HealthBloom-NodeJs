@@ -3,6 +3,7 @@ const mongoose=require('mongoose');
 var ObjectId = require('mongoose').Types.ObjectId; 
 
 const current = new Date();
+const date = `${current.getDate()}/${current.getMonth() + 1}/${current.getFullYear()} At ${current.getHours()}:${current.getMinutes()}`;
 
 let schemaComment=mongoose.Schema({
    
@@ -19,8 +20,8 @@ let schemaComment=mongoose.Schema({
         required: false
       },
     dateTime: {
-        type:Date,
-        default: current
+        type:String,
+        default: date
       },
       emailUser:{
         type: String,

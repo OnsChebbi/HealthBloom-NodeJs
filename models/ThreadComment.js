@@ -1,47 +1,38 @@
 const { Db } = require('mongodb');
 const mongoose = require('mongoose');
-const ThreadComment = require('./ThreadComment')
-const {Schema} = mongoose;
 var ObjectId = require('mongoose').Types.ObjectId;
-
 
 const current = new Date();
 const date = `${current.getDate()}/${current.getMonth() + 1}/${current.getFullYear()}`;
 
-let schemaThread = Schema({
-    title: {
-        type: String,
-        required: true
-    },
+let schemaThreadComment = mongoose.Schema({
+    
     body: {
         type: String,
         required: true
-    },
-    initContent : {type: Schema.Types.ObjectId,ref:'threadComment'},
-
-    comments : [{type: Schema.Types.ObjectId,ref:'threadComment'}]
+    }
 })
 
-let Thread = mongoose.model('thread', schemaThread)
+let ThreadComment = mongoose.model('threadComment', schemaThreadComment)
 let url = 'mongodb+srv://nosnos:healthbloompw@healthbloom.b38oy.mongodb.net/healthbloom';
 
 
-//Retrieve All Threads
-exports.getAllThreads = () => {
+//Retrieve All ThreadComments
+exports.getAllThreadComments = () => {
 
     return new Promise((resolve, reject) => {
         console.log("new promise")
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(
             () => {
                 console.log("databse connected")
-                //Find all threads
-                return Thread.find();
+                //Find all threadComments
+                return ThreadComment.find();
             }
         )
-            .then(threads => {
+            .then(threadComments => {
                 //resolve the result of the promise
-                resolve(threads)
-                console.log(threads)
+                resolve(threadComments)
+                console.log(threadComments)
 
             })
             //catches errors
@@ -51,29 +42,29 @@ exports.getAllThreads = () => {
 }
 
 
-exports.getOneThread = (id) => {
+exports.getOneThreadComment = (id) => {
     return new Promise((resolve, reject) => {
-        var idThread = mongoose.Types.ObjectId(id)
+        var idThreadComment = mongoose.Types.ObjectId(id)
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
-            return Thread.findById(idThread);
+            return ThreadComment.findById(idThreadComment);
 
-        }).then(threads => {
-            resolve(threads)
-            console.log(threads)
+        }).then(threadComments => {
+            resolve(threadComments)
+            console.log(threadComments)
 
         }).catch(err => reject(err))
 
     })
 }
 
-exports.deleteThread = (id) => {
+exports.deleteThreadComment = (id) => {
     console.log('promise delete')
-    var idThread = mongoose.Types.ObjectId(id)
+    var idThreadComment = mongoose.Types.ObjectId(id)
 
     return new Promise((resolve, reject) => {
 
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
-            return Thread.findOneAndRemove({ _id: idThread })
+            return ThreadComment.findOneAndRemove({ _id: idThreadComment })
 
         }).then(() => {
 
@@ -85,24 +76,19 @@ exports.deleteThread = (id) => {
 } 
 
 
-exports.addThread = (title, body) => {
+exports.addThreadComment = (title, body) => {
     return new Promise((resolve, reject) => {
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
             console.log("1")
-            let thread = new Thread({
-                title: title,
+            let threadComment = new ThreadComment({
                 body: body
 
             })
-            let firstContent = new ThreadComment({
-                body:body
-            })
-            firstContent.save();
-            thread.initContent = firstContent._id;
-
             console.log("before insert")
-            return thread.save()
+            return threadComment.save()
 
         })
     })
 }
+
+module.exports = ThreadComment

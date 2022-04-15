@@ -1,5 +1,7 @@
+
 const ForumSection = require("../../models/ForumSection")
-const Thread = require("../../models/Thread")
+const Thread = require("./ForumServices/ThreadService");
+const ThreadComment = require("./ForumServices/ThreadCommentServices");
 
 exports.addForumSection=async (request,response)=>{
     console.log(request.body)
@@ -58,6 +60,21 @@ exports.getAllThreads=async (request,response)=>{
     }
 }
 
+exports.getOneThread=async (request,response)=>{
+    let id=request.params.id;
+    
+    try{
+        let thr = await Thread.getOneThread(id)
+
+        response.send(thr)
+        console.log(thr)
+    }
+    catch(error){
+        response.json({success:false,message:error});
+
+    }
+}
+
 
 exports.deleteForumSection=async (request,response)=>{
     let id=request.params.id;
@@ -67,5 +84,21 @@ exports.deleteForumSection=async (request,response)=>{
     }
     catch(error){
         response.json({success:false,message:error});
+    }
+}
+
+exports.addCommentToThread=async (request,response)=>{
+    console.log(request.body)
+    threadId=request.body.threadId;
+    content=request.body.body;
+
+    try{
+        ThreadComment.addCommentToThread(content,threadId);
+        response.json({success:true,message:"Thread added successfully"});
+
+    }
+    catch(error){
+        response.json({success:false,message:error});
+    
     }
 }

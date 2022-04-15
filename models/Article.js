@@ -135,7 +135,6 @@ exports.deleteArticle = (id) => {
         }).catch(err => reject(err))
 
     })
-
 }
 
 exports.likeArticle = (id) => {
@@ -292,10 +291,6 @@ exports.addArticle = (title, description, author, image) => {
 
         })
     })
-
-
-
-
 }
 
 exports.best = () => {

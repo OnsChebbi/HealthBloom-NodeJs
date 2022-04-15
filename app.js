@@ -26,6 +26,7 @@ mongoose.connect(config.mongo.uri,{
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var articleRouter= require('./routes/MagazineRouter/articleRouter');
+var forumRouter= require('./routes/ForumRouter/forumRouter');
 
 var app = express();
 
@@ -50,6 +51,7 @@ app.use('/api/reviews', reviewsRoutes);
 app.use('/', indexRouter);
 app.use('/articles', articleRouter);
 app.use('/users', usersRouter);
+app.use('/forum', forumRouter);
 
 
 

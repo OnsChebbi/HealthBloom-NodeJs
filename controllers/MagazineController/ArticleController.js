@@ -1,8 +1,6 @@
 const Article=  require('../../models/Article')
 const Comment= require('../../models/Comment')
 
-
-
 exports.getOneArticleController=async (request,response)=>{
     let id=request.params.id;
     try{
@@ -60,10 +58,10 @@ exports.topArticlesController=async (request,response)=>{
         response.send(articles)
 
     }
-catch(error){
-    response.json({success:false,message:error});
+    catch(error){
+        response.json({success:false,message:error});
 
-}
+    }
 }
 
 
@@ -87,10 +85,10 @@ exports.getComments=async (request,response)=>{
         response.send(comments)
 
     }
-catch(error){
-    response.json({success:false,message:error});
+    catch(error){
+        response.json({success:false,message:error});
 
-}
+    }
 }
 
 exports.addArticleController=async (request,response)=>{
@@ -108,8 +106,6 @@ exports.addArticleController=async (request,response)=>{
         response.json({success:false,message:error});
     
     }
-
-
 }
 
 exports.updateArticleController=async (request,response)=>{
@@ -166,8 +162,6 @@ exports.likeArticle=async (request,response)=>{
         response.json({success:false,message:error});
     
     }
-
-
 }
 
 exports.unlikeArticle=async (request,response)=>{

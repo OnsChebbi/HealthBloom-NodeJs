@@ -22,7 +22,20 @@ var patient = new Schema({
     },
     height : Number,
     weight : Number,
-    IMC : Number
+    IMC : Number,
+    BloodType : {
+        type: String,
+        enum : ["A+","A-","B+","B-","AB+","AB-","O+","O-","unknown"],
+        default : "unknown"
+    },
+    Notifications : [{
+        description : String,
+        State : {
+            type : String,
+            enum: ["seen","notSeen"],
+            default: "notSeen"
+        }
+    }]
 })
 
 module.exports = mongoose.model('patient',patient);

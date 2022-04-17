@@ -11,22 +11,19 @@ const HttpError = require('./models/http-error');
 // connection to DataBase
 var mongoose = require("mongoose");
 var config = require('./database/db.json');
+
 mongoose.connect(config.mongo.uri,{
 		useFindAndModify: false,
 		useNewUrlParser: true,
 		useUnifiedTopology: true},
-	()=> {
-		app.listen(5000, () => {
-			console.log('server is running on port 5000');
-		});
-	}
+	()=> console.log('data base connection success')
 )
-
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var articleRouter= require('./routes/MagazineRouter/articleRouter');
 var forumRouter= require('./routes/ForumRouter/forumRouter');
+var MedicalFileRouter = require('./routes/MedicalFileRoutes');
 
 var app = express();
 
@@ -52,37 +49,42 @@ app.use('/', indexRouter);
 app.use('/articles', articleRouter);
 app.use('/users', usersRouter);
 app.use('/forum', forumRouter);
+app.use('/medicalFile', MedicalFileRouter);
+
+
+//Connecting to the Mongo database
+app.get('/',(req,res)=>{
+  mongoose.connect(MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
+
+		console.log("Connected to %s", MONGODB_URL);
+		console.log("App is running ... \n");
+		console.log("Press CTRL + C to stop the process. \n");
+	}
+)
+	.catch(err => {
+		console.error("App starting error:", err.message);
+		process.exit(1);
+	});
+})
+
+var db = mongoose.connection;
 
 
 
-app.use((req, res, next) => {
-	const error = new HttpError('could not find this route.', 404);
-	res.status(error.code || 500)
-	res.json({message: error.message || 'An unknown error occured'});
+// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+  next(createError(404));
 });
 
-app.use(((error, req, res, next) => {
-	if (res.headerSent) {
-		return next(error);
-	}
-	res.status(error.code || 500)
-	res.json({message: error.message || 'An unknown error occured'});
-}));
+// error handler
+app.use(function(err, req, res, next) {
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-// // catch 404 and forward to error handler
-// app.use(function(req, res, next) {
-//   next(createError(404));
-// });
-//
-// // error handler
-// app.use(function(err, req, res, next) {
-//   // set locals, only providing error in development
-//   res.locals.message = err.message;
-//   res.locals.error = req.app.get('env') === 'development' ? err : {};
-//
-//   // render the error page
-//   res.status(err.status || 500);
-//   res.render('error');
-// });
+  // render the error page
+  res.status(err.status || 500);
+  res.render('error');
+});
 
 module.exports = app;

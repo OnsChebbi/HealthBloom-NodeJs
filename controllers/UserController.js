@@ -7,6 +7,18 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken")
 const nodemailer = require("nodemailer");
 var randomstring = require("randomstring");
+const PasswordReset = require("../models/PasswordReset");
+//unique string identifier
+const {v4 : uuidV4} = require("uuid")
+
+
+let transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: 'feres.benhamed99@gmail.com', // generated ethereal user
+        pass: 'Dunkyfyzel1', // generated ethereal password
+    }
+})
 
 async function verifyMail(email) {
     var x = false;
@@ -275,55 +287,124 @@ exports.changePassword = async (req,res) =>{
     await User.findByIdAndUpdate({_id: user._id},user,(err)=>{
         if(err) throw err;
     });
-    res.status(200).send('passord updated');
+    res.status(200).send('password updated');
 
 }
+//   ******************** {Password reset section} **********************
+//password reset
+exports.resetPasswordRequest = (req,res) =>{
+    const {email,redirectUrl} = req.body;
+    //check if user exists
+    User.find({'Email': email})
+        .then((data)=>{
+            if (data.length){
+                //check if user is verified ( lezem narj3oulha hedyy mbaeed )
+                sendResetEmail(data[0],redirectUrl,res);
+            } else {
+                res.json({
+                    status : "Failed",
+                    message : "No account with the supplied email exists!"
+                })
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            res.json({
+                status : "Failed",
+                message : "error occurred while checking for existing user"
+            })
+        })
+}
+//send reset pwd mail function
+function sendResetEmail({_id,Email},redirectUrl,res){
+    const resetString = uuidV4()+_id;
+    //first we try to clear off of the existing reset password requests in order to make the operation run smooth
+    PasswordReset.deleteMany({userId: _id})
+        .then(result => {
+            //now we send the email
+            const mailParams = {
+                from: 'feres.benhamed99@gmail.com', // sender address
+                to: Email, // list of receivers
+                subject: "you forgot your account's password ?", // Subject line
+                html: `<p>Hello, we heard that you lost your password.</p>
+                    <p>no need to be worried just use the link below in order to reset it </p>
+                    <p>this link <b>expiers in 60 minutes</b></p <p>Press <a href=${
+                    redirectUrl +"/"+_id+"/"+resetString}>here</a></p>
+                    <p>if this request wast not made by you please contat us </p>`
+            };
+            //hash te reset string
+            bcrypt.hash(resetString,10)
+                .then(hashedResetString =>{
+                    const newPwdRest = new PasswordReset({
+                        userId : _id,
+                        resetString: hashedResetString  ,
+                        createdAt: Date.now(),
+                        expiredAt: Date.now()+3600000
+                    });
+                    newPwdRest.save()
+                        .then(() => {
+                            transporter.sendMail(mailParams)
+                                .then(
+                                    res.json({
+                                        status : "Pending",
+                                        message : "pwd reset mail sent"
+                                    })
+                                )
+                        })
+                })
+            })
+        .catch(err=>{
+            console.log(err);
+            res.json({
+                status : "Failed",
+                message : "error occurred while clearing existing rest pwd records"
+            })
+        })
+}
+//resetting the pwd after getting the mail
+exports.resetForgottenPassword = async (req, res) => {
+    let {userId, resetString, newPassword} = req.body;
+    await PasswordReset.find({userId: userId}, (err, result) => {
+        if (err) throw err
+        if (result.length > 0){
+            if (result[0].expiredAt < Date.now()) {
+                //we delete the request if the expiration date has passed
+                PasswordReset.deleteOne({'userId':userId},(err)=>{
+                    if(err) throw err;
+                })
+                res.status(400).send("the request has expired");
+            } else {
+                //the request is still valid
+                bcrypt.compare(resetString,result[0].resetString)
+                    .then((result)=>{
+                        if(result){
+                            //existing record and valid resetString
+                            bcrypt.hash(newPassword,10).then(hashedNewPassword =>{
+                                    //we need to update the user
+                                    User.updateOne({_id:userId},{Password: hashedNewPassword },(err)=>{
+                                        if (err) throw err;
 
-//forget password (this one needs to be updated)
-exports.forgetPassword = async (req,res) =>{
-    var user = new User;
-    const email= req.body.email;
-    console.log(email);
-    // look for the user
-    await User.findOne({'Email': email},  (err,data)=>{
-        if (err) throw err;
-        user = data;
-    });
-    // generate a new password and assign it to the user
-    const newPassword = randomstring.generate({
-        length: 12,
-        charset: "alphanumeric"
-    });
-    user.Password = await bcrypt.hash(newPassword,10);
-    await User.findByIdAndUpdate({_id: user._id},user,(err)=>{
-        if(err) throw err;
-    });
-
-    //email sender information
-    let transporter = nodemailer.createTransport({
-        service: 'gmail', // true for 465, false for other ports
-        auth: {
-            user: 'feres.benhamed99@gmail.com', // generated ethereal user
-            pass: 'Dunkyfyzel1', // generated ethereal password
-        },
-    });
-    console.log(newPassword);
-    //send email if user exists
-    if(await verifyMail(email)) {
-        console.log("bch nabeeth mail")
-        // send mail with defined transport object
-        let info = await transporter.sendMail({
-            from: 'feres.benhamed99@gmail.com', // sender address
-            to: 'feres.benhamed@esprit.tn', // list of receivers
-            subject: "you forgot your account's password ?", // Subject line
-            html: "<b>hello we received a request that you have forgot your account's password </b>" +
-                "<b> your new password is </b> "+ newPassword +
-                "<b> please be aware that you must change this password as soon as you log in </b>"+
-                "<b> if this was not requested by you please report to our team.</b>" // html body
-        });
-    }
-    res.status(200).send("mail successful");
-
+                                        //password is updated now we just need to delete the request
+                                        PasswordReset.deleteOne({userId: userId},(err)=>{
+                                            if(err) throw err;
+                                            res.status(200).send("password reset is done successfully");
+                                        })
+                                    })
+                            }
+                            )
+                        } else {
+                            //existing record but invalid resetString
+                            res.json({
+                                status:"Failed",
+                                message:"Invalid resetString provided"
+                            })
+                        }
+                    })
+            }
+        } else {
+            res.status(400).send("password reset request not found");
+        }
+    })
 }
 
 // look for doctors

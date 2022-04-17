@@ -11,7 +11,8 @@ router.post("/login", userController.login);
 router.get('/getById/:id', userController.getById);
 router.get('/updateUser/:id', userController.updateUser);
 router.post('/changePassword/:id', userController.changePassword);
-router.post('/forgetPassword', userController.forgetPassword);
+router.post('/forgetPassword', userController.resetPasswordRequest);
+router.post('/resetForgottenPassword', userController.resetForgottenPassword);
 
 router.get('/deleteUser/:id',userController.deleteUser);
 router.get('/getAllPatients',userController.getAllPatients);

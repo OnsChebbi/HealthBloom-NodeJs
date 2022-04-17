@@ -24,7 +24,8 @@
     "morgan": "~1.9.1",
     "nodemailer": "^6.7.3",
     "path": "^0.12.7",
-    "randomstring": "^1.2.2"
+    "randomstring": "^1.2.2",
+    "uuid": "^8.3.2"
   },
   "description": "* [General info](#general-info)\r * [Was made by :](#Made-by)\r * [Technologies](#technologies)\r * [Setup](#setup)",
   "main": "app.js",

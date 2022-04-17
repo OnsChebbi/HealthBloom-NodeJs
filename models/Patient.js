@@ -27,7 +27,15 @@ var patient = new Schema({
         type: String,
         enum : ["A+","A-","B+","B-","AB+","AB-","O+","O-","unknown"],
         default : "unknown"
-    }
+    },
+    Notifications : [{
+        description : String,
+        State : {
+            type : String,
+            enum: ["seen","notSeen"],
+            default: "notSeen"
+        }
+    }]
 })
 
 module.exports = mongoose.model('patient',patient);

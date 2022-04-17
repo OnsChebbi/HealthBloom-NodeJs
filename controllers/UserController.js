@@ -6,7 +6,6 @@ const Assistant = require('../models/Assistant');
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken")
 const nodemailer = require("nodemailer");
-var randomstring = require("randomstring");
 const PasswordReset = require("../models/PasswordReset");
 //unique string identifier
 const {v4 : uuidV4} = require("uuid")
@@ -21,11 +20,11 @@ let transporter = nodemailer.createTransport({
 })
 
 async function verifyMail(email) {
-    var x = false;
+    let x = false;
     await User.find(function (err,data){
-        for (var i = 0; i < data.length; i++){
+        for (let i = 0; i < data.length; i++){
             if (data[i].Email === email) {
-                console.log("lkytt nafs l mail and user ekhor");
+                console.log("i found the email used in another account");
                 x = true;
             }
         }
@@ -41,17 +40,17 @@ exports.getAll = async (req,res) =>{
 }
 
 exports.getById = async (req,res) =>{
-    var id = req.params.id;
-    var user = await User.findById({_id:id});
-    var patient = await Patient.findById({_id:user._patient});
-    var obj = Object.assign({user}, {patient});
+    let id = req.params.id;
+    let user = await User.findById({_id:id});
+    let patient = await Patient.findById({_id:user._patient});
+    let obj = Object.assign({user}, {patient});
     res.status(200).send(obj);
 }
 
 exports.getPatients = async (callback) =>{
-    var patients = [];
+    let patients = [];
     await User.find(function (err, data) {
-        for (var i = 0; i < data.length; i++) {
+        for (let i = 0; i < data.length; i++) {
             if (data[i].Role === "Patient") {
                 patients.push(data[i]);
             }
@@ -67,7 +66,7 @@ exports.getAllPatients = async (req,res) => {
 }
 
 exports.addUser = async (req,res) =>{
-    var user = new User({
+    let user = new User({
         FirstName: req.body.FirstName,
         LastName: req.body.LastName,
         Email: req.body.Email,
@@ -83,7 +82,7 @@ exports.addUser = async (req,res) =>{
     if ( !await verifyMail(user.Email)){
         if(req.body.Role === "Patient"){
             console.log("new patient");
-            var patient = new Patient({
+            let patient = new Patient({
                 _userId : user._id,
                 height : req.body.height
             });
@@ -92,7 +91,7 @@ exports.addUser = async (req,res) =>{
         }
         else if (req.body.Role === "Doctor"){
             console.log("new Doctor");
-            var doctor = new Doctor({
+            let doctor = new Doctor({
                 Speciality: req.body.Speciality,
                 OfficeAddress: req.body.OfficeAddress,
                 ProfessionalCardNumber: req.body.ProfessionalCardNumber,
@@ -107,7 +106,7 @@ exports.addUser = async (req,res) =>{
         }
         else if (req.body.Role === "Assistant"){
             console.log("new Assistant");
-            var assistant = new Assistant({
+            let assistant = new Assistant({
                 Speciality: req.body.Speciality,
                 Description: req.body.Description,
                 ActsAndCare: req.body.ActsAndCare
@@ -128,7 +127,7 @@ exports.addUser = async (req,res) =>{
 exports.login = async (req,res)=>{
     try{
         const {Email,Password} = req.body;
-        var restUserInfo = null;
+        let restUserInfo = null;
         if(!(Email && Password)){
             res.status(401).send("All input is required");
         }
@@ -177,8 +176,8 @@ exports.login = async (req,res)=>{
 //update user
 exports.updateUser = async (req, res) => {
     // updating the actual user
-    var id = req.params.id;
-    var user = new User({
+    let id = req.params.id;
+    let user = new User({
         FirstName: req.body.FirstName,
         LastName: req.body.LastName,
         Email: req.body.Email,
@@ -194,8 +193,8 @@ exports.updateUser = async (req, res) => {
     })
 
     //updating the rest of his info (doctor/patient/assistant)
-    var id2; // for the role id (doctor/patient/assistant)
-    var user1; // instance of user to get the profession id
+    let id2; // for the role id (doctor/patient/assistant)
+    let user1; // instance of user to get the profession id
     await User.findById({_id: id}, function (err, data) {
         if (err) throw err;
         user1 = data;
@@ -241,9 +240,9 @@ exports.updateUser = async (req, res) => {
 }
 //delete user
 exports.deleteUser = async (req,res) =>{
-    var id = req.params.id;
-    var id2;
-    var user;
+    let id = req.params.id;
+    let id2;
+    let user;
     await User.findById({_id:id},function (err,data){
         if(err) throw err;
         user = data;
@@ -278,7 +277,7 @@ exports.deleteUser = async (req,res) =>{
 exports.changePassword = async (req,res) =>{
     const id = req.params.id;
     const newPassword = await bcrypt.hash(req.body.newPassword,10);
-    var user;
+    let user;
     await User.findById({_id:id},function (err,data){
         if(err) throw err;
         user = data;
@@ -298,7 +297,7 @@ exports.resetPasswordRequest = (req,res) =>{
     User.find({'Email': email})
         .then((data)=>{
             if (data.length){
-                //check if user is verified ( lezem narj3oulha hedyy mbaeed )
+                //check if user is verified ( we need to make some minor changes later )
                 sendResetEmail(data[0],redirectUrl,res);
             } else {
                 res.json({
@@ -409,9 +408,9 @@ exports.resetForgottenPassword = async (req, res) => {
 
 // look for doctors
 exports.getDoctors = async (callback) =>{
-    var doctors = [];
+    let doctors = [];
     await User.find(function (err, data) {
-        for (var i = 0; i < data.length; i++) {
+        for (let i = 0; i < data.length; i++) {
             if (data[i].Role === "Doctor") {
                 doctors.push(data[i]);
             }

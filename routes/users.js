@@ -7,7 +7,7 @@ var Doctor = require('../models/Doctor');
 var Assistant = require('../models/Assistant');
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-
+const  AssistantController=require('../controllers/AssistantController');
 
 /* GET users listing. */
 router.get('/',authenticataToken, function(req, res, next) {
@@ -139,52 +139,27 @@ router.post('/addPatient', async function (req, res, next) {
 })
 
 /* GET assistants listing. */
-router.get('/getassistants', function (req, res) {
-  Assistant.find(function(err,data) {
-    if(err) throw err;
-    res.status(200).send(data);
-
-  });
-})
+router.get('/getassistants',AssistantController.getAllAssistants)
 
 /* GET assistant by id. */
-router.get('/getassistants/:id', (req, res)=> {
-  Assistant.findById(req.params.id,(err,data)=> {
-    if(err) throw err;
-    res.status(200).send(data);
+router.get('/getassistants/:id',AssistantController.getAssistantByID)
 
-  });
-  //res.send(assistants);
-})
-
-/* GET assistant by id. */
-router.put('/editassistant/:id', async (req, res) => {
-
-    console.log("edit Assistant");
-    const emp = {
-      Speciality: req.body.Speciality,
-      Description: req.body.Description,
-      ActsAndCare: req.body.ActsAndCare
-    };
-    Assistant.findByIdAndUpdate(req.params.id, { $set: emp }, { new: true }, (err, data) => {
-      if(err) throw err;
-      res.status(200).send(data);
-    });
-    //User._assistant = Assistant._id;
-
-
-
-})
+/* Edit an assistant by id. */
+router.put('/editassistant/:id',AssistantController.EditAssistantByID)
 
 /* delete assistant by id. */
-router.delete('/deleteassistants/:id', (req, res)=> {
-  Assistant.findByIdAndRemove(req.params.id,(err,data)=> {
+router.delete('/deleteassistants/:id',AssistantController.DeleteAssistantsById)
+
+/* delete All assistants */
+router.delete('/deleteassistant',AssistantController.DeleteAllAssistants)
+
+
+exports.DeleteAllAssistants=(req,res)=>{
+  Assistant.remove(function(err,data) {
     if(err) throw err;
     res.status(200).send(data);
 
-
   });
-  //res.send(assistants);
-})
 
+}
 module.exports = router;

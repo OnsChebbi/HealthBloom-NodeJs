@@ -3,7 +3,10 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var patient = new Schema({
-    height : Number,
+    _userId :{
+        type: Schema.Types.ObjectId,
+        ref: 'user'
+    },
     appointments : [
         {
             Date : Date,
@@ -16,7 +19,10 @@ var patient = new Schema({
     Cart : {
         type: Schema.Types.ObjectId,
         ref: 'cart'
-    }
+    },
+    height : Number,
+    weight : Number,
+    IMC : Number
 })
 
 module.exports = mongoose.model('patient',patient);

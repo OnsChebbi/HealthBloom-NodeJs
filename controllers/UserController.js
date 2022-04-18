@@ -5,6 +5,33 @@ const Doctor = require('../models/Doctor');
 const Assistant = require('../models/Assistant');
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken")
+const nodemailer = require("nodemailer");
+var randomstring = require("randomstring");
+const PasswordReset = require("../models/PasswordReset");
+//unique string identifier
+const {v4 : uuidV4} = require("uuid")
+
+
+let transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: 'feres.benhamed99@gmail.com', // generated ethereal user
+        pass: 'Dunkyfyzel1', // generated ethereal password
+    }
+})
+
+async function verifyMail(email) {
+    var x = false;
+    await User.find(function (err,data){
+        for (var i = 0; i < data.length; i++){
+            if (data[i].Email === email) {
+                console.log("lkytt nafs l mail and user ekhor");
+                x = true;
+            }
+        }
+    })
+    return x;
+}
 
 exports.getAll = async (req,res) =>{
     User.find(function (err,data){
@@ -13,17 +40,13 @@ exports.getAll = async (req,res) =>{
     });
 }
 
-// exports.getAllPatients = async (req,res) =>{
-//     var patients = [Patient];
-//     await User.find(function (err,data){
-//         for( var i =0 ; i<data.length;i++){
-//             if(data[i].Role === "Patient"){
-//                 patients.push(data[i]);
-//             }
-//         }
-//     });
-//     res.status(200).send(patients);
-// }
+exports.getById = async (req,res) =>{
+    var id = req.params.id;
+    var user = await User.findById({_id:id});
+    var patient = await Patient.findById({_id:user._patient});
+    var obj = Object.assign({user}, {patient});
+    res.status(200).send(obj);
+}
 
 exports.getPatients = async (callback) =>{
     var patients = [];
@@ -37,9 +60,9 @@ exports.getPatients = async (callback) =>{
     return callback(null,patients);
 }
 exports.getAllPatients = async (req,res) => {
-     this.getPatients(function (err, data) {
+    this.getPatients(function (err, data) {
         if (err) throw err;
-        res.status(200).send({users: data, message: "success"});
+        res.status(200).send(data);
     });
 }
 
@@ -55,43 +78,51 @@ exports.addUser = async (req,res) =>{
         Role : req.body.Role,
         BirthDate : req.body.BirthDate
     })
-    if(req.body.Role === "Patient"){
-        console.log("new patient");
-        var patient = new Patient({
-            _userId : user._id,
-            height : req.body.height
-        });
-        await patient.save();
-        user._patient= patient._id;
-    }
-    else if (req.body.Role === "Doctor"){
-        console.log("new Doctor");
-        var doctor = new Doctor({
-            Speciality: req.body.Speciality,
-            OfficeAddress: req.body.OfficeAddress,
-            ProfessionalCardNumber: req.body.ProfessionalCardNumber,
-            Insurance: req.body.Insurance,
-            LaborTime: req.body.LaborTime,
-            Description: req.body.Description,
-            ActsAndCare: req.body.ActsAndCare
 
-        });
-        await doctor.save();
-        user._doctor= doctor._id;
+    //we need to check the email here first
+    if ( !await verifyMail(user.Email)){
+        if(req.body.Role === "Patient"){
+            console.log("new patient");
+            var patient = new Patient({
+                _userId : user._id,
+                height : req.body.height
+            });
+            await patient.save();
+            user._patient= patient._id;
+        }
+        else if (req.body.Role === "Doctor"){
+            console.log("new Doctor");
+            var doctor = new Doctor({
+                Speciality: req.body.Speciality,
+                OfficeAddress: req.body.OfficeAddress,
+                ProfessionalCardNumber: req.body.ProfessionalCardNumber,
+                Insurance: req.body.Insurance,
+                LaborTime: req.body.LaborTime,
+                Description: req.body.Description,
+                ActsAndCare: req.body.ActsAndCare
+
+            });
+            await doctor.save();
+            user._doctor= doctor._id;
+        }
+        else if (req.body.Role === "Assistant"){
+            console.log("new Assistant");
+            var assistant = new Assistant({
+                Speciality: req.body.Speciality,
+                Description: req.body.Description,
+                ActsAndCare: req.body.ActsAndCare
+            });
+            await assistant.save();
+            user._assistant= assistant._id;
+        }
+        user.Role = req.body.Role;
+        await user.save();
+        res.status(200).send(user);
     }
-    else if (req.body.Role === "Assistant"){
-        console.log("new Assistant");
-        var assistant = new Assistant({
-            Speciality: req.body.Speciality,
-            Description: req.body.Description,
-            ActsAndCare: req.body.ActsAndCare
-        });
-        await assistant.save();
-        user._assistant= assistant._id;
-    }
-    user.Role = req.body.Role;
-    await user.save();
-    res.status(200).send(user);
+    else
+        res.status(400).send("this email already exists");
+
+
 }
 
 exports.login = async (req,res)=>{
@@ -99,9 +130,16 @@ exports.login = async (req,res)=>{
         const {Email,Password} = req.body;
         var restUserInfo = null;
         if(!(Email && Password)){
-            res.status(400).send("All input is required");
+            res.status(401).send("All input is required");
         }
         const user = await User.findOne({Email});
+        ////
+        if (user){
+
+        }
+        else
+            res.status(402).send("email is wrong");
+        /////
         if(user&&(await bcrypt.compare(Password,user.Password))){
             if(user.Role === "Patient"){
                 restUserInfo = user._patient;
@@ -129,6 +167,8 @@ exports.login = async (req,res)=>{
             user.Token = token;
             res.status(200).json(token);
         }
+        else
+            res.status(400).send("check your credentials");
     }catch (err){
         console.log(err);
     }
@@ -196,7 +236,7 @@ exports.updateUser = async (req, res) => {
             if (err) throw err;
         })
     }
-    res.status(200).send("delete successful");
+    res.status(200).send("update successful");
 
 }
 //delete user
@@ -232,4 +272,156 @@ exports.deleteUser = async (req,res) =>{
         });
     }
     res.status(200).send("delete successful");
+}
+
+//change password
+exports.changePassword = async (req,res) =>{
+    const id = req.params.id;
+    const newPassword = await bcrypt.hash(req.body.newPassword,10);
+    var user;
+    await User.findById({_id:id},function (err,data){
+        if(err) throw err;
+        user = data;
+    })
+    user.Password=newPassword;
+    await User.findByIdAndUpdate({_id: user._id},user,(err)=>{
+        if(err) throw err;
+    });
+    res.status(200).send('password updated');
+
+}
+//   ******************** {Password reset section} **********************
+//password reset
+exports.resetPasswordRequest = (req,res) =>{
+    const {email,redirectUrl} = req.body;
+    //check if user exists
+    User.find({'Email': email})
+        .then((data)=>{
+            if (data.length){
+                //check if user is verified ( lezem narj3oulha hedyy mbaeed )
+                sendResetEmail(data[0],redirectUrl,res);
+            } else {
+                res.json({
+                    status : "Failed",
+                    message : "No account with the supplied email exists!"
+                })
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            res.json({
+                status : "Failed",
+                message : "error occurred while checking for existing user"
+            })
+        })
+}
+//send reset pwd mail function
+function sendResetEmail({_id,Email},redirectUrl,res){
+    const resetString = uuidV4()+_id;
+    //first we try to clear off of the existing reset password requests in order to make the operation run smooth
+    PasswordReset.deleteMany({userId: _id})
+        .then(result => {
+            //now we send the email
+            const mailParams = {
+                from: 'feres.benhamed99@gmail.com', // sender address
+                to: Email, // list of receivers
+                subject: "you forgot your account's password ?", // Subject line
+                html: `<p>Hello, we heard that you lost your password.</p>
+                    <p>no need to be worried just use the link below in order to reset it </p>
+                    <p>this link <b>expiers in 60 minutes</b></p <p>Press <a href=${
+                    redirectUrl +"/"+_id+"/"+resetString}>here</a></p>
+                    <p>if this request wast not made by you please contat us </p>`
+            };
+            //hash te reset string
+            bcrypt.hash(resetString,10)
+                .then(hashedResetString =>{
+                    const newPwdRest = new PasswordReset({
+                        userId : _id,
+                        resetString: hashedResetString  ,
+                        createdAt: Date.now(),
+                        expiredAt: Date.now()+3600000
+                    });
+                    newPwdRest.save()
+                        .then(() => {
+                            transporter.sendMail(mailParams)
+                                .then(
+                                    res.json({
+                                        status : "Pending",
+                                        message : "pwd reset mail sent"
+                                    })
+                                )
+                        })
+                })
+            })
+        .catch(err=>{
+            console.log(err);
+            res.json({
+                status : "Failed",
+                message : "error occurred while clearing existing rest pwd records"
+            })
+        })
+}
+//resetting the pwd after getting the mail
+exports.resetForgottenPassword = async (req, res) => {
+    let {userId, resetString, newPassword} = req.body;
+    await PasswordReset.find({userId: userId}, (err, result) => {
+        if (err) throw err
+        if (result.length > 0){
+            if (result[0].expiredAt < Date.now()) {
+                //we delete the request if the expiration date has passed
+                PasswordReset.deleteOne({'userId':userId},(err)=>{
+                    if(err) throw err;
+                })
+                res.status(400).send("the request has expired");
+            } else {
+                //the request is still valid
+                bcrypt.compare(resetString,result[0].resetString)
+                    .then((result)=>{
+                        if(result){
+                            //existing record and valid resetString
+                            bcrypt.hash(newPassword,10).then(hashedNewPassword =>{
+                                    //we need to update the user
+                                    User.updateOne({_id:userId},{Password: hashedNewPassword },(err)=>{
+                                        if (err) throw err;
+
+                                        //password is updated now we just need to delete the request
+                                        PasswordReset.deleteOne({userId: userId},(err)=>{
+                                            if(err) throw err;
+                                            res.status(200).send("password reset is done successfully");
+                                        })
+                                    })
+                            }
+                            )
+                        } else {
+                            //existing record but invalid resetString
+                            res.json({
+                                status:"Failed",
+                                message:"Invalid resetString provided"
+                            })
+                        }
+                    })
+            }
+        } else {
+            res.status(400).send("password reset request not found");
+        }
+    })
+}
+
+// look for doctors
+exports.getDoctors = async (callback) =>{
+    var doctors = [];
+    await User.find(function (err, data) {
+        for (var i = 0; i < data.length; i++) {
+            if (data[i].Role === "Doctor") {
+                doctors.push(data[i]);
+            }
+        }
+    });
+    return callback(null,doctors);
+}
+exports.FindDoctor = async (req,res) => {
+    this.getDoctors(function (err, data) {
+        if (err) throw err;
+        res.status(200).send(data);
+    });
 }

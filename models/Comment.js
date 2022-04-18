@@ -3,6 +3,7 @@ const mongoose=require('mongoose');
 var ObjectId = require('mongoose').Types.ObjectId; 
 
 const current = new Date();
+const date = `${current.getDate()}/${current.getMonth() + 1}/${current.getFullYear()} At ${current.getHours()}:${current.getMinutes()}`;
 
 let schemaComment=mongoose.Schema({
    
@@ -19,9 +20,13 @@ let schemaComment=mongoose.Schema({
         required: false
       },
     dateTime: {
-        type:Date,
-        default: current
-      }
+        type:String,
+        default: date
+      },
+      emailUser:{
+        type: String,
+        required: true
+      },
    
 })
 
@@ -56,13 +61,15 @@ console.log("new promise")
 }
 
 
-exports.addComment=(content,idArticle)=>{
+exports.addComment=(content,idArticle,idUser,emailUser)=>{
     return new Promise((resolve,reject)=>{
         mongoose.connect(url,{useNewUrlParser:true,useUnifiedTopology:true}).then(()=>{
         console.log("1")
             let comment=new Comment({
                 content:content,
-                idArticle:idArticle
+                idArticle:idArticle,
+                idUser: idUser,
+                emailUser: emailUser 
                 
             })
            return comment.save()
@@ -73,3 +80,37 @@ exports.addComment=(content,idArticle)=>{
 }
 
 
+exports.deleteComment = (id) => {
+    var idComment = mongoose.Types.ObjectId(id)
+
+    return new Promise((resolve, reject) => {
+
+        mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
+            return Comment.findOneAndRemove({ _id: idComment })
+
+        }).then(() => {
+
+            resolve(true)
+
+        }).catch(err => reject(err))
+
+    })
+
+}
+
+
+
+exports.getOneComment = (id) => {
+    return new Promise((resolve, reject) => {
+        var idComment = mongoose.Types.ObjectId(id)
+        mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
+            return Comment.findById(idComment);
+
+        }).then(comment => {
+            resolve(comment)
+
+        }).catch(err => reject(err))
+
+    })
+
+}

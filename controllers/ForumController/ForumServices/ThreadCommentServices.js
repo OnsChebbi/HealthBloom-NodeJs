@@ -22,7 +22,7 @@ exports.getAllThreadComments = () => {
             .then(threadComments => {
                 //resolve the result of the promise
                 resolve(threadComments)
-                console.log(threadComments)
+                //console.log(threadComments)
 
             })
             //catches errors
@@ -40,7 +40,7 @@ exports.getOneThreadComment = (id) => {
 
         }).then(threadComments => {
             resolve(threadComments)
-            console.log(threadComments)
+            //console.log(threadComments)
 
         }).catch(err => reject(err))
 
@@ -67,27 +67,31 @@ exports.deleteThreadComment = (id) => {
 
 
 exports.addCommentToThread =  async (body, threadId) => {
-
+  
     let newId = mongoose.Types.ObjectId(threadId)
     let thrObj = await Thread.findById(newId);
-    console.log(thrObj)
+    //console.log(thrObj)
 
     return new Promise((resolve, reject) => {
         
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
-            console.log("1")
+
             let threadComment = new ThreadComment({
                 _id: new mongoose.Types.ObjectId(),
                 body: body
-
             })
-            console.log("before insert")
-            let thComObj = threadComment.save().then((data) => {
+            
+            return threadComment.save().then((data) => {
                 thrObj.comments.push(data._id);
                 thrObj.save();
-            });
+                 
+            thComObj = {_id : data._id, body:data.body }
+
             
-            return thComObj;
+            resolve(thComObj)
+
+            });
+
         })
     })
 }

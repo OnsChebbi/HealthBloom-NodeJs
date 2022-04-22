@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const {Schema} = mongoose;
 const Thread = require('./../../../models/Thread');
 const ThreadComment = require('./../../../models/ThreadComment');
+const ForumSection = require('./../../../models/ForumSection');
 
 let url = 'mongodb+srv://nosnos:healthbloompw@healthbloom.b38oy.mongodb.net/healthbloom';
 
@@ -21,7 +22,7 @@ exports.getAllThreads = () => {
             .then(threads => {
                 //resolve the result of the promise
                 resolve(threads)
-                console.log(threads)
+                //console.log(threads)
 
             })
             //catches errors
@@ -29,6 +30,30 @@ exports.getAllThreads = () => {
 
     })
 }
+
+exports.getAllThreadsBySection = (sectionId) => {
+    
+    return new Promise((resolve, reject) => {
+        console.log("new promise")
+        mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(
+            () => {
+                console.log("databse connected")
+                //Find all threads
+                return Thread.find({section:mongoose.Types.ObjectId(sectionId)});
+            }
+        )
+            .then(threads => {
+                //resolve the result of the promise
+                resolve(threads)
+                //console.log(threads)
+
+            })
+            //catches errors
+            .catch(err => reject(err))
+
+    })
+}
+
 
 
 exports.getOneThread = (id) => {
@@ -39,20 +64,27 @@ exports.getOneThread = (id) => {
 
         }).then(threads => {
             resolve(threads)
-            console.log(threads)
+            //console.log(threads)
 
         }).catch(err => reject(err))
 
     })
 }
 
-exports.deleteThread = (id) => {
+exports.deleteThread = async (id) => {
     console.log('promise delete')
     var idThread = mongoose.Types.ObjectId(id)
+    let thr = await Thread.findById(idThread)
 
     return new Promise((resolve, reject) => {
 
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
+            
+            ThreadComment.findOneAndRemove({_id: mongoose.Types.ObjectId(thr.initContent)}).exec()
+
+            thr.comments.forEach(element => {
+                ThreadComment.findOneAndRemove({_id: mongoose.Types.ObjectId(element)}).exec()
+            });
             return Thread.findOneAndRemove({ _id: idThread })
 
         }).then(() => {
@@ -65,20 +97,21 @@ exports.deleteThread = (id) => {
 } 
 
 
-exports.addThread = (title, body) => {
+exports.addThread = (title, body,sectionId) => {
+    let sectionIdMong = mongoose.Types.ObjectId(sectionId)
+
     return new Promise((resolve, reject) => {
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
-            console.log("1")
+            
             let thread = new Thread({
-                title: title,
-                body: body
-
+                title: title
             })
             let firstContent = new ThreadComment({
                 body:body
             })
             firstContent.save();
             thread.initContent = firstContent._id;
+            thread.section = sectionIdMong;
 
             console.log("before insert")
             return thread.save()

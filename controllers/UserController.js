@@ -204,6 +204,81 @@ exports.login = async (req,res)=>{
     }
 }
 
+//complete profile
+exports.completeProfile = async (req,res) =>{
+    // updating the actual user
+    let id = req.params.id;
+    console.log(req.body);
+    let user = {
+        FirstName: req.body.FirstName,
+        LastName: req.body.LastName,
+        Email: req.body.Email,
+        Sex: req.body.Sex,
+        Password: await bcrypt.hash(req.body.Password,10),
+        Address: req.body.Address,
+        Picture: req.body.Picture,
+        Phone: req.body.Phone,
+        Role : req.body.Role,
+        BirthDate : req.body.BirthDate
+    }
+    User.findByIdAndUpdate({_id:id}, user)
+        .then(result=>{
+            if (user.Role === "Patient") {
+                console.log("new patient");
+                let patient = new Patient({
+                    _userId : id,
+                    height : req.body.height,
+                    weight : req.body.weight,
+                    IMC : (req.body.weight)/((req.body.height)*(req.body.height)),
+                    BloodType: req.body.BloodType
+                })
+                patient.save()
+                    .then(()=>{
+                        user._patient=patient._id;
+                        User.findByIdAndUpdate({_id:id}, user)
+                            .then(resultt=>{
+                                res.status(200).send("profile completed")
+                            })
+                    })
+            } else if (user.Role === "Doctor") {
+                console.log("new doc");
+                let doctor = new Doctor({
+                    Speciality: req.body.Speciality,
+                    OfficeAddress: req.body.OfficeAddress,
+                    ProfessionalCardNumber: req.body.ProfessionalCardNumber,
+                })
+                doctor.save()
+                    .then(()=>{
+                            user._doctor=doctor._id;
+                            User.findByIdAndUpdate({_id:id}, user)
+                                .then(resultt=>{
+                                    res.status(200).send("profile completed")
+                                })
+                    }
+                    )
+            } else if (user.Role === "Assistant") {
+                console.log("new assistant");
+                let assistant = new Assistant({
+                    Speciality: req.body.Speciality,
+                    Description: req.body.Description,
+                    ActsAndCare: req.body.ActsAndCare
+                })
+                assistant.save()
+                    .then(()=>{
+                        user._assistant=assistant._id;
+                        User.findByIdAndUpdate({_id:id}, user)
+                            .then(resultt=>{
+                                res.status(200).send("profile completed")
+                            })
+                    })
+            }
+        })
+        .catch(err=>{
+            console.log(err)
+            res.status(500).send("error");
+        })
+}
+
 //update user
 exports.updateUser = async (req, res) => {
     // updating the actual user

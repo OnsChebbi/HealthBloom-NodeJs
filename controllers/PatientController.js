@@ -26,7 +26,7 @@ exports.updatePatientAction = async (req, res) => {
         height : req.body.height,
         weight: req.body.weight,
         BloodType: req.body.BloodType,
-        IMC : (req.body.height/req.body.weight)
+        IMC : (req.body.height)/((req.body.weight)*(req.body.weight))
     }
     //update the patient entity
     console.log(patient.IMC);

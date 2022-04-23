@@ -8,14 +8,17 @@ const jwt = require("jsonwebtoken")
 const nodemailer = require("nodemailer");
 const PasswordReset = require("../models/PasswordReset");
 //unique string identifier
-const {v4 : uuidV4} = require("uuid")
+const {v4 : uuidV4} = require("uuid");
 
+//google auth
+const {OAuth2Client} = require('google-auth-library');
+const googleClient = new OAuth2Client("410085321469-ndnv3jtljc9fksblkbtdv9lvu6gnv614.apps.googleusercontent.com");
 
 let transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-        user: 'feres.benhamed99@gmail.com', // generated ethereal user
-        pass: 'Dunkyfyzel1', // generated ethereal password
+        user: 'Healthbloomapp@gmail.com', // generated ethereal user
+        pass: 'binarybrains', // generated ethereal password
     }
 })
 
@@ -41,10 +44,33 @@ exports.getAll = async (req,res) =>{
 
 exports.getById = async (req,res) =>{
     let id = req.params.id;
-    let user = await User.findById({_id:id});
-    let patient = await Patient.findById({_id:user._patient});
-    let obj = Object.assign({user}, {patient});
-    res.status(200).send(obj);
+    User.findById({_id:id})
+        .then(async user => {
+            if (user.Role === "Patient") {
+                let patient = await Patient.findById({_id: user._patient});
+                let obj = Object.assign({user}, {patient});
+                res.status(200).send(obj);
+            } else if (user.Role === "Doctor") {
+                let doctor = await Doctor.findById({_id: user._doctor});
+                let obj = Object.assign({user}, {doctor});
+                res.status(200).send(obj);
+
+            } else if (user.Role === "Assistant") {
+                let assistant = await Assistant.findById({_id: user._assistant});
+                let obj = Object.assign({user}, {assistant});
+                res.status(200).send(obj);
+
+            } else {
+                res.status(200).send(user);
+            }
+        })
+        .catch(err=>{
+            console.log(err);
+            res.json({
+                status : "Failed",
+                message : "error occurred while getting user from db"
+            })
+        })
 }
 
 exports.getPatients = async (callback) =>{
@@ -124,6 +150,35 @@ exports.addUser = async (req,res) =>{
 
 }
 
+// create token for login
+function createLoginToken(user){
+    let restUserInfo = null;
+    if(user.Role === "Patient"){
+        restUserInfo = user._patient;
+    }
+    else if(user.Role === "Doctor"){
+        restUserInfo = user._doctor;
+
+    }
+    else if(user.Role === "Assistant"){
+        restUserInfo = user._assistant;
+
+    }
+    const token = jwt.sign(
+        {
+            user_id: user._id,
+            Email: user.Email,
+            Role: user.Role,
+            restUserInfo : restUserInfo
+        },
+        process.env.JWT_KEY,
+        {
+            expiresIn: "2h",
+        }
+    );
+    return token;
+}
+
 exports.login = async (req,res)=>{
     try{
         const {Email,Password} = req.body;
@@ -132,42 +187,18 @@ exports.login = async (req,res)=>{
             res.status(401).send("All input is required");
         }
         const user = await User.findOne({Email});
-        ////
         if (user){
-
+            if(await bcrypt.compare(Password,user.Password)){
+                const token = createLoginToken(user);
+                user.Token = token;
+                res.status(200).json(token);
+            }
+            else
+                res.status(400).send("wrong password");
         }
         else
             res.status(402).send("email is wrong");
-        /////
-        if(user&&(await bcrypt.compare(Password,user.Password))){
-            if(user.Role === "Patient"){
-                restUserInfo = user._patient;
-            }
-            else if(user.Role === "Doctor"){
-                restUserInfo = user._doctor;
 
-            }
-            else if(user.Role === "Assistant"){
-                restUserInfo = user._assistant;
-
-            }
-            const token = jwt.sign(
-                {
-                    user_id: user._id,
-                    Email,
-                    Role: user.Role,
-                    restUserInfo : restUserInfo
-                },
-                process.env.JWT_KEY,
-                {
-                    expiresIn: "2h",
-                }
-            );
-            user.Token = token;
-            res.status(200).json(token);
-        }
-        else
-            res.status(400).send("check your credentials");
     }catch (err){
         console.log(err);
     }
@@ -322,7 +353,7 @@ function sendResetEmail({_id,Email},redirectUrl,res){
         .then(result => {
             //now we send the email
             const mailParams = {
-                from: 'feres.benhamed99@gmail.com', // sender address
+                from: 'Healthbloomapp@gmail.com', // sender address
                 to: Email, // list of receivers
                 subject: "you forgot your account's password ?", // Subject line
                 html: `<p>Hello, we heard that you lost your password.</p>
@@ -423,4 +454,59 @@ exports.FindDoctor = async (req,res) => {
         if (err) throw err;
         res.status(200).send(data);
     });
+}
+
+exports.googleAuth = async (req,res)=>{
+    const {tokenId} = req.body;
+    let restUserInfo = null;
+    await googleClient.verifyIdToken({
+        idToken : tokenId,
+        audience: "410085321469-ndnv3jtljc9fksblkbtdv9lvu6gnv614.apps.googleusercontent.com"
+    })
+        .then(response =>{
+            const {email_verified,name,email} = response.payload;
+            console.log(response.payload);
+            if(email_verified){
+                 User.findOne({Email : email})
+                     .exec(async (err, user) => {
+                         if (err) console.log(err);
+                         if (user) {
+                             //user found and already registered in app  so we only need to log him in and send token to front
+                             console.log(user);
+                             const token = createLoginToken(user);
+                             res.status(200).json(token);
+                         } else {
+                             //user not registered so we need to sign him up
+                             console.log("not registered");
+                             let user = new User({
+                                 FirstName: response.payload.given_name,
+                                 LastName: response.payload.family_name,
+                                 Email: response.payload.email,
+                             });
+                             console.log(user);
+                             await user.save();
+                             //here we send a mail that he need to complete his credentials & set a new password
+                             const mailParams = {
+                                 from: 'Healthbloomapp@gmail.com', // sender address
+                                 to: user.Email, // list of receivers
+                                 subject: "welcome to our app", // Subject line
+                                 html: `<p><h1>Hi, we're Health Bloom</h1></p>
+                                 <p><h3>Thanks for choosing us to help you manage your medical care follow-up</h3></p>
+                                 <p>Please redirect to the platform to complete your informations and set a new password</p>`
+                             };
+                             transporter.sendMail(mailParams);
+                             //now we send token so user can login automatically
+                             const token = createLoginToken(user);
+                             res.status(200).json(token);
+                         }
+                     })
+            }
+        })
+        .catch(err=>{
+            console.log(err);
+            res.json({
+                status : "Failed",
+                message : "error occurred while checking google tokenId"
+            })
+        })
 }

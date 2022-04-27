@@ -41,6 +41,7 @@ exports.addLikeToComment = async (userId,commentId) => {
             obj.save()*/
             newComment.likes.push(obj)
             newComment.save()
+            resolve(obj)
         })
     })
 

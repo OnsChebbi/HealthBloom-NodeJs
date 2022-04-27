@@ -1,5 +1,5 @@
 
-const ForumSection = require("../../models/ForumSection")
+const ForumSection = require("./ForumServices/ForumSectionService")
 const Thread = require("./ForumServices/ThreadService");
 const ThreadComment = require("./ForumServices/ThreadCommentServices");
 const ThreadCommentLike = require("./ForumServices/ThreadCommentLikeService");
@@ -69,6 +69,21 @@ exports.getAllThreadsBySection=async (request,response)=>{
         let sections= await Thread.getAllThreadsBySection(sectionId);
         response.send(sections)
 
+    }
+    catch(error){
+        response.json({success:false,message:error});
+
+    }
+}
+
+exports.getOneForumSection=async (request,response)=>{
+    let id=request.params.id;
+    
+    try{
+        let thr = await ForumSection.getOneForumSection(id)
+
+        response.send(thr)
+        //console.log(thr)
     }
     catch(error){
         response.json({success:false,message:error});

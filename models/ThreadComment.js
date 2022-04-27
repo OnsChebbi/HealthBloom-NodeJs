@@ -5,11 +5,16 @@ var ObjectId = require('mongoose').Types.ObjectId;
 var Schema = mongoose.Schema;
 
 
+
 let schemaThreadComment = Schema({
     
     body: {
         type: String,
         required: true
+    },
+    dateCreated: {
+        type: String,
+
     },
     likes : [{type: Schema.Types.ObjectId,ref:'threadCommentLike'}]
 })

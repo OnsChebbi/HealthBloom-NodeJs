@@ -4,6 +4,8 @@ const Thread = require('./../../../models/Thread');
 const ThreadComment = require('./../../../models/ThreadComment');
 const ForumSection = require('./../../../models/ForumSection');
 
+const ThreadCommentService = require('./ThreadCommentServices')
+
 let url = 'mongodb+srv://nosnos:healthbloompw@healthbloom.b38oy.mongodb.net/healthbloom';
 
 
@@ -39,7 +41,7 @@ exports.getAllThreadsBySection = (sectionId) => {
             () => {
                 console.log("databse connected")
                 //Find all threads
-                return Thread.find({section:mongoose.Types.ObjectId(sectionId)});
+                return Thread.find({section:mongoose.Types.ObjectId(sectionId)}).populate('comments').exec();
             }
         )
             .then(threads => {
@@ -83,7 +85,7 @@ exports.deleteThread = async (id) => {
             ThreadComment.findOneAndRemove({_id: mongoose.Types.ObjectId(thr.initContent)}).exec()
 
             thr.comments.forEach(element => {
-                ThreadComment.findOneAndRemove({_id: mongoose.Types.ObjectId(element)}).exec()
+               ThreadCommentService.deleteThreadComment( mongoose.Types.ObjectId(element))
             });
             return Thread.findOneAndRemove({ _id: idThread })
 
@@ -98,16 +100,22 @@ exports.deleteThread = async (id) => {
 
 
 exports.addThread = (title, body,sectionId) => {
+    
+    let current = new Date();
+    const date = `${current.getDate()}-${current.getMonth() + 1}-${current.getFullYear()} ${current.getHours()}:${current.getMinutes()}`;
+
     let sectionIdMong = mongoose.Types.ObjectId(sectionId)
 
     return new Promise((resolve, reject) => {
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
             
             let thread = new Thread({
-                title: title
+                title: title,
+                dateCreated: date
             })
             let firstContent = new ThreadComment({
-                body:body
+                body:body,
+                dateCreated: date
             })
             firstContent.save();
             thread.initContent = firstContent._id;

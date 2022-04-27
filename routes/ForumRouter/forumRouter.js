@@ -5,7 +5,8 @@ const router= require('express').Router()
 
 router.post('/add-section',forumSectionController.addForumSection);
 router.get('/get-sections',forumSectionController.getAllForumSections);
-router.get('/get-section-threads',forumSectionController.getAllForumSections);
+router.get('/get-section-by-id/:id',forumSectionController.getOneForumSection);
+
 router.post('/create-thread',forumSectionController.addThread);
 router.get('/get-threads',forumSectionController.getAllThreads);
 router.get('/get-threads-by-section/:sectionId',forumSectionController.getAllThreadsBySection);

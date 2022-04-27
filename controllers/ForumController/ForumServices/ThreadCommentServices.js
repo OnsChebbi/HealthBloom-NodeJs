@@ -1,5 +1,6 @@
 const { Db } = require('mongodb');
 const mongoose = require('mongoose');
+const ThreadCommentLike = require('../../../models/ThreadCommentLike');
 const Thread = require('./../../../models/Thread');
 const ThreadComment = require('./../../../models/ThreadComment');
 
@@ -47,13 +48,19 @@ exports.getOneThreadComment = (id) => {
     })
 }
 
-exports.deleteThreadComment = (id) => {
-    console.log('promise delete')
+exports.deleteThreadComment = async (id) => {
+ 
     var idThreadComment = mongoose.Types.ObjectId(id)
+    let thrComment = await ThreadComment.findById(idThreadComment)
 
     return new Promise((resolve, reject) => {
 
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
+            
+            thrComment.likes.forEach(element => {
+                ThreadCommentLike.findOneAndRemove({_id: mongoose.Types.ObjectId(element)}).exec()
+            });
+
             return ThreadComment.findOneAndRemove({ _id: idThreadComment })
 
         }).then(() => {
@@ -67,6 +74,9 @@ exports.deleteThreadComment = (id) => {
 
 
 exports.addCommentToThread =  async (body, threadId) => {
+
+    let current = new Date();
+    const date = `${current.getDate()}-${current.getMonth() + 1}-${current.getFullYear()} ${current.getHours()}:${current.getMinutes()}`;
   
     let newId = mongoose.Types.ObjectId(threadId)
     let thrObj = await Thread.findById(newId);
@@ -78,7 +88,8 @@ exports.addCommentToThread =  async (body, threadId) => {
 
             let threadComment = new ThreadComment({
                 _id: new mongoose.Types.ObjectId(),
-                body: body
+                body: body,
+                dateCreated: date
             })
             
             return threadComment.save().then((data) => {

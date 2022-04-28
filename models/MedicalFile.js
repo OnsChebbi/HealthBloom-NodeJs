@@ -36,6 +36,7 @@ var MedicalFile = new Schema({
         treatments : String,
         outcomes : String
     }],
+
     //relationships, careers, religious,
     SocialHistory : [{
         title : String,

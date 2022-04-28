@@ -49,6 +49,7 @@ exports.updatePatientAction = async (req, res) => {
         FirstName: req.body.FirstName,
         LastName: req.body.LastName,
         Sex: req.body.Sex,
+        Picture: req.body.Picture,
         BirthDate: req.body.BirthDate,
         Email: req.body.Email,
         Address: req.body.Address,

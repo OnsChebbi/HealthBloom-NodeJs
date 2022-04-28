@@ -37,7 +37,9 @@ async function verifyMail(email) {
 
 exports.getAll = async (req,res) =>{
     User.find(function (err,data){
-        if(err) throw err;
+        if(err){
+            res.status(400).json("err in find method : " + err);
+        }
         res.status(200).send({users:  data, message: "success"});
     });
 }
@@ -86,7 +88,9 @@ exports.getPatients = async (callback) =>{
 }
 exports.getAllPatients = async (req,res) => {
     this.getPatients(function (err, data) {
-        if (err) throw err;
+        if (err) {
+            res.status(400).send(err);
+        }
         res.status(200).send(data);
     });
 }
@@ -200,7 +204,7 @@ exports.login = async (req,res)=>{
             res.status(402).send("email is wrong");
 
     }catch (err){
-        console.log(err);
+        res.status(400).send(err);
     }
 }
 
@@ -295,14 +299,18 @@ exports.updateUser = async (req, res) => {
         BirthDate : req.body.BirthDate
     })
     User.findByIdAndUpdate({_id:id}, user,(err) =>{
-        if (err) throw err;
+        if (err) {
+            res.status(400).send(err);
+        }
     })
 
     //updating the rest of his info (doctor/patient/assistant)
     let id2; // for the role id (doctor/patient/assistant)
     let user1; // instance of user to get the profession id
     await User.findById({_id: id}, function (err, data) {
-        if (err) throw err;
+        if (err) {
+            res.status(400).send(err);
+        }
         user1 = data;
     })
     if(user.Role === "Patient"){
@@ -312,7 +320,9 @@ exports.updateUser = async (req, res) => {
             height : req.body.height
         });
         await Patient.findByIdAndUpdate({_id:id2},patient,(err) =>{
-            if (err) throw err;
+            if (err) {
+                res.status(400).send(err);
+            }
         })
     }
     else if(user.Role === "Doctor"){
@@ -327,7 +337,9 @@ exports.updateUser = async (req, res) => {
             ActsAndCare: req.body.ActsAndCare
         });
         await Doctor.findByIdAndUpdate({_id:id2},doctor,(err) =>{
-            if (err) throw err;
+            if (err) {
+                res.status(400).send(err);
+            }
         })
     }
     else if(user.Role === "Assistant"){
@@ -338,7 +350,9 @@ exports.updateUser = async (req, res) => {
             ActsAndCare: req.body.ActsAndCare
         });
         await Assistant.findByIdAndUpdate({_id:id2},assistant,(err) =>{
-            if (err) throw err;
+            if (err) {
+                res.status(400).send(err);
+            }
         })
     }
     res.status(200).send("update successful");
@@ -350,30 +364,40 @@ exports.deleteUser = async (req,res) =>{
     let id2;
     let user;
     await User.findById({_id:id},function (err,data){
-        if(err) throw err;
+        if(err) {
+            res.status(400).send(err);
+        }
         user = data;
     })
     await User.findByIdAndRemove({_id:id2},(err) =>{
-        if (err) throw err;
+        if (err) {
+            res.status(400).send(err);
+        }
     });
     console.log(user);
     if(user.Role === "Patient"){
         id2=  user._patient;
         await Patient.findByIdAndRemove({_id:id2},(err) =>{
-            if (err) throw err;
+            if (err) {
+                res.status(400).send(err);
+            }
         });
 
     }
     else if(user.Role === "Doctor"){
         id2= user._doctor;
         await Doctor.findByIdAndRemove({_id:id2},(err) =>{
-            if (err) throw err;
+            if (err) {
+                res.status(400).send(err);
+            }
         });
     }
     else if(user.Role === "Assistant"){
         id2 = user._assistant;
         await Assistant.findByIdAndRemove({_id:id2},(err) =>{
-            if (err) throw err;
+            if (err) {
+                res.status(400).send(err);
+            }
         });
     }
     res.status(200).send("delete successful");
@@ -385,12 +409,16 @@ exports.changePassword = async (req,res) =>{
     const newPassword = await bcrypt.hash(req.body.newPassword,10);
     let user;
     await User.findById({_id:id},function (err,data){
-        if(err) throw err;
+        if(err) {
+            res.status(400).send(err);
+        }
         user = data;
     })
     user.Password=newPassword;
     await User.findByIdAndUpdate({_id: user._id},user,(err)=>{
-        if(err) throw err;
+        if(err) {
+            res.status(400).send(err);
+        }
     });
     res.status(200).send('password updated');
 
@@ -470,12 +498,16 @@ function sendResetEmail({_id,Email},redirectUrl,res){
 exports.resetForgottenPassword = async (req, res) => {
     let {userId, resetString, newPassword} = req.body;
     await PasswordReset.find({userId: userId}, (err, result) => {
-        if (err) throw err
+        if (err) {
+            res.status(400).send(err);
+        }
         if (result.length > 0){
             if (result[0].expiredAt < Date.now()) {
                 //we delete the request if the expiration date has passed
                 PasswordReset.deleteOne({'userId':userId},(err)=>{
-                    if(err) throw err;
+                    if(err) {
+                        res.status(400).send(err);
+                    }
                 })
                 res.status(400).send("the request has expired");
             } else {
@@ -487,11 +519,15 @@ exports.resetForgottenPassword = async (req, res) => {
                             bcrypt.hash(newPassword,10).then(hashedNewPassword =>{
                                     //we need to update the user
                                     User.updateOne({_id:userId},{Password: hashedNewPassword },(err)=>{
-                                        if (err) throw err;
+                                        if (err) {
+                                            res.status(400).send(err);
+                                        }
 
                                         //password is updated now we just need to delete the request
                                         PasswordReset.deleteOne({userId: userId},(err)=>{
-                                            if(err) throw err;
+                                            if(err) {
+                                                res.status(400).send(err);
+                                            }
                                             res.status(200).send("password reset is done successfully");
                                         })
                                     })
@@ -526,7 +562,9 @@ exports.getDoctors = async (callback) =>{
 }
 exports.FindDoctor = async (req,res) => {
     this.getDoctors(function (err, data) {
-        if (err) throw err;
+        if (err) {
+            res.status(400).send(err);
+        }
         res.status(200).send(data);
     });
 }

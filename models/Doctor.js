@@ -3,13 +3,16 @@ var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 
 var doctor = new Schema({
+  _userId: {
+    type: Schema.Types.ObjectId,
+    ref: "user",
+  },
   Speciality: String,
   OfficeAddress: String,
   ProfessionalCardNumber: Number,
   Insurance: String,
   LaborTime: String,
   Description: String,
-  //ActsAndCare : String,
   Started: Date,
   Patients: [{ type: Schema.Types.ObjectId, ref: "patient" }],
   Status: {

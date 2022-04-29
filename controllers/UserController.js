@@ -287,7 +287,7 @@ exports.completeProfile = async (req,res) =>{
 exports.updateUser = async (req, res) => {
     // updating the actual user
     let id = req.params.id;
-    let user = new User({
+    let user ={
         FirstName: req.body.FirstName,
         LastName: req.body.LastName,
         Email: req.body.Email,
@@ -297,64 +297,67 @@ exports.updateUser = async (req, res) => {
         Phone: req.body.Phone,
         Role : req.body.Role,
         BirthDate : req.body.BirthDate
-    })
-    User.findByIdAndUpdate({_id:id}, user,(err) =>{
-        if (err) {
+    }
+    User.findByIdAndUpdate({_id:id}, user)
+        .then(async result=>{
+            //updating the rest of his info (doctor/patient/assistant)
+            let id2; // for the role id (doctor/patient/assistant)
+            let user1; // instance of user to get the profession id
+            await User.findById({_id: id})
+                .then(async data => {
+                    user1 = data;
+                    if (user1.Role === "Patient") {
+                        id2 = user1._patient;
+                        const patient = {
+                            height: req.body.height
+                        };
+                        await Patient.findByIdAndUpdate({_id: id2}, patient, (err) => {
+                            if (err) {
+                                res.status(400).send(err);
+                            }
+                        })
+                    } else if (user1.Role === "Doctor") {
+                        console.log("updating doctor");
+                        id2 = user1._doctor;
+                        const doctor = {
+                            Speciality: req.body.Speciality,
+                            OfficeAddress: req.body.OfficeAddress,
+                            ProfessionalCardNumber: req.body.ProfessionalCardNumber,
+                            Insurance: req.body.Insurance,
+                            LaborTime: req.body.LaborTime,
+                            Description: req.body.Description,
+                            ActsAndCare: req.body.ActsAndCare
+                        };
+                        await Doctor.findByIdAndUpdate({_id: id2}, doctor, (err) => {
+                            if (err) {
+                                res.status(400).send(err);
+                            }
+                        })
+                    } else if (user1.Role === "Assistant") {
+                        id2 = user1._assistant;
+                        const assistant = {
+                            Speciality: req.body.Speciality,
+                            Description: req.body.Description,
+                            ActsAndCare: req.body.ActsAndCare
+                        };
+                        await Assistant.findByIdAndUpdate({_id: id2}, assistant, (err) => {
+                            if (err) {
+                                res.status(400).send(err);
+                            }
+                        })
+                    }
+                })
+                .catch(err=>{
+                    res.status(400).send(err);
+                })
+        })
+        .catch(err=>{
             res.status(400).send(err);
-        }
-    })
+        })
 
-    //updating the rest of his info (doctor/patient/assistant)
-    let id2; // for the role id (doctor/patient/assistant)
-    let user1; // instance of user to get the profession id
-    await User.findById({_id: id}, function (err, data) {
-        if (err) {
-            res.status(400).send(err);
-        }
-        user1 = data;
-    })
-    if(user.Role === "Patient"){
-        id2 =  user._patient;
-        const patient = new Patient({
-            _userId : user._id,
-            height : req.body.height
-        });
-        await Patient.findByIdAndUpdate({_id:id2},patient,(err) =>{
-            if (err) {
-                res.status(400).send(err);
-            }
-        })
-    }
-    else if(user.Role === "Doctor"){
-        id2 = user._doctor;
-        const doctor = new Doctor({
-            Speciality: req.body.Speciality,
-            OfficeAddress: req.body.OfficeAddress,
-            ProfessionalCardNumber: req.body.ProfessionalCardNumber,
-            Insurance: req.body.Insurance,
-            LaborTime: req.body.LaborTime,
-            Description: req.body.Description,
-            ActsAndCare: req.body.ActsAndCare
-        });
-        await Doctor.findByIdAndUpdate({_id:id2},doctor,(err) =>{
-            if (err) {
-                res.status(400).send(err);
-            }
-        })
-    }
-    else if(user.Role === "Assistant"){
-        id2 = user._assistant;
-        const assistant = new Assistant({
-            Speciality: req.body.Speciality,
-            Description: req.body.Description,
-            ActsAndCare: req.body.ActsAndCare
-        });
-        await Assistant.findByIdAndUpdate({_id:id2},assistant,(err) =>{
-            if (err) {
-                res.status(400).send(err);
-            }
-        })
-    }
+
+
+
     res.status(200).send("update successful");
 
 }

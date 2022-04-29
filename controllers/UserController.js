@@ -4,6 +4,7 @@ const Patient = require("../models/Patient");
 const Doctor = require("../models/Doctor");
 const Assistant = require("../models/Assistant");
 const bcrypt = require("bcrypt");
+
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const PasswordReset = require("../models/PasswordReset");

@@ -129,7 +129,6 @@ exports.addUser = async (req, res) => {
         Insurance: req.body.Insurance,
         LaborTime: req.body.LaborTime,
         Description: req.body.Description,
-        ActsAndCare: req.body.ActsAndCare,
       });
       await doctor.save();
       user._doctor = doctor._id;
@@ -234,6 +233,9 @@ exports.completeProfile = async (req, res) => {
           Speciality: req.body.Speciality,
           OfficeAddress: req.body.OfficeAddress,
           ProfessionalCardNumber: req.body.ProfessionalCardNumber,
+          Insurance: req.body.Insurance,
+          LaborTime: req.body.LaborTime,
+          Description: req.body.Description,
         });
         doctor.save().then(() => {
           user._doctor = doctor._id;

@@ -3,6 +3,7 @@ var Schema = mongoose.Schema;
 
 var user = new Schema({
     //for all users
+    googleId: String,
     FirstName : String,
     LastName : String,
     Email : String,
@@ -23,8 +24,8 @@ var user = new Schema({
     },
     Role : {
         type : String,
-        enum : ["Patient","Doctor","Assistant"],
-        default : "Patient"
+        enum : ["Patient","Doctor","Assistant","unknown"],
+        default : "unknown"
     },
     _patient:{
         type: Schema.Types.ObjectId,

@@ -13,6 +13,8 @@ router.get('/updateUser/:id', userController.updateUser);
 router.post('/changePassword/:id', userController.changePassword);
 router.post('/forgetPassword', userController.resetPasswordRequest);
 router.post('/resetForgottenPassword', userController.resetForgottenPassword);
+router.post('/googleLogin',userController.googleAuth);
+router.post('/completeProfile/:id',userController.completeProfile);
 
 router.get('/deleteUser/:id',userController.deleteUser);
 router.get('/getAllPatients',userController.getAllPatients);

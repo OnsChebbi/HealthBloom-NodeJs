@@ -4,17 +4,19 @@ const HttpError = require("../models/http-error");
 const Product = require('../models/product');
 const Review = require('../models/review');
 const mongoose = require("mongoose");
-const multiparty = require('multiparty');
+const {log} = require("debug");
+
+const stripe = require('stripe')('sk_test_51KqTxUBfP4XL5It4LoSuJhybl2OSCoZyvuVmUW5Iv5mgEeLbEqEYRHlKQrFrPPfGVb1Fyqn7EdPVMbxKP0ur2WSZ00DCaBWq5B');
 
 
-
+const YOUR_DOMAIN = 'http://localhost:3000/shop'
 
 const getProductById = async (req, res, next) => {
     const productId = req.params.pid;
     let product;
     try {
-        product = await Product.findById(productId);
-    }catch (e) {
+        product = await Product.findById(productId).populate('reviews');
+    } catch (e) {
         const error = new HttpError('could not find a product.', 500);
         return next(error);
     }
@@ -30,7 +32,7 @@ const getProducts = async (req, res, next) => {
     try {
         products = await Product.find();
 
-    }catch (e) {
+    } catch (e) {
         return next(new HttpError('Fetching products failed. Please try again later.', 500));
     }
     if (!products || products.length === 0) {
@@ -64,7 +66,7 @@ const createProduct = async (req, res, next) => {
 
     try {
         await createdProduct.save();
-    }catch (e) {
+    } catch (e) {
 
         const error = new HttpError('Creating product failed, please try again', 500);
         return next(error);
@@ -87,7 +89,7 @@ const updateProductById = async (req, res, next) => {
     let product;
     try {
         product = await Product.findById(productId);
-    }catch (e) {
+    } catch (e) {
         const error = new HttpError('could not find a product.', 500);
         return next(error);
     }
@@ -95,8 +97,6 @@ const updateProductById = async (req, res, next) => {
     if (!product) {
         return next(new HttpError('Could not find a product for the provided id.', 404));
     }
-
-
 
 
     product.name = name;
@@ -108,7 +108,7 @@ const updateProductById = async (req, res, next) => {
     try {
         await product.save();
 
-    }catch (e) {
+    } catch (e) {
         const error = new HttpError('could not update  product.', 500);
         return next(error);
     }
@@ -123,19 +123,20 @@ const deleteProductById = async (req, res, next) => {
     let product;
     try {
         product = await Product.findById(productId);
-    }catch (e) {
+    } catch (e) {
         const error = new HttpError('could not delete a product.', 500);
         return next(error);
     }
 
 
     try {
-        const sess = await  mongoose.startSession();
+        // await product.remove();
+        const sess = await mongoose.startSession();
         sess.startTransaction();
-        Review.deleteMany({_id: { $in: product.reviews}},err => console.log(err) ).session(sess)
-        await  product.remove({session: sess});
+        Review.deleteMany({_id: {$in: product.reviews}}, err => console.log(err)).session(sess)
+        await product.remove({session: sess});
         await sess.commitTransaction()
-    }catch (e) {
+    } catch (e) {
         return next(new HttpError('Could not delete a product', 404));
 
     }
@@ -144,10 +145,55 @@ const deleteProductById = async (req, res, next) => {
 
 }
 
+const checkoutCart = async (req, res, next) => {
+    const sessionId = req.params.pid;
+
+    const line_items = req.body.items.map((item) => {
+
+
+        return {
+            name: item.name,
+            description: item.name,
+            images: ['https://www.ubuy.tn/productimg/?image=aHR0cHM6Ly9tLm1lZGlhLWFtYXpvbi5jb20vaW1hZ2VzL0kvODEyM3llbHZHa0wuX0FDX1NMMTUwMF8uanBn.jpg'],
+            amount: item.price * 100,
+            currency: 'usd',
+            quantity: item.quantity
+        };
+    })
+
+    const session = await stripe.checkout.sessions.create({
+        line_items: line_items,
+        mode: 'payment',
+        success_url: `${YOUR_DOMAIN}/invoice?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${YOUR_DOMAIN}/checkout`,
+    });
+
+    res.json({url: session.url});
+};
+
+const getPayments = async (req, res, next) => {
+    const sessionId = req.params.sessionId;
+
+    let session;
+    let items;
+    try {
+        session = await stripe.checkout.sessions.retrieve(sessionId);
+        items = await stripe.checkout.sessions.listLineItems(sessionId);
+        console.log(session);
+    } catch (e) {
+        console.log(e);
+    }
+
+    res.json({items:items.data, session});
+
+};
+
 module.exports = {
     getProductById,
     getProducts,
     createProduct,
     updateProductById,
-    deleteProductById
+    deleteProductById,
+    checkoutCart,
+    getPayments
 };

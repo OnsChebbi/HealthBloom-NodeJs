@@ -58,5 +58,8 @@ router.patch('/:pid',
 
 router.delete('/:pid', productsControllers.deleteProductById);
 
+router.post('/checkout', productsControllers.checkoutCart);
+router.get('/checkout/:sessionId', productsControllers.getPayments);
+
 
 module.exports = router;

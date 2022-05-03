@@ -372,7 +372,7 @@ exports.deleteUser = async (req,res) =>{
         }
         user = data;
     })
-    await User.findByIdAndRemove({_id:id2},(err) =>{
+    await User.findByIdAndRemove({_id:id},(err) =>{
         if (err) {
             res.status(400).send(err);
         }

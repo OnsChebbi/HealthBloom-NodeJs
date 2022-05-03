@@ -1,158 +1,152 @@
 require("dotenv").config();
-const User = require('../models/User');
-const Patient = require('../models/Patient');
-const Doctor = require('../models/Doctor');
-const Assistant = require('../models/Assistant');
+const User = require("../models/User");
+const Patient = require("../models/Patient");
+const Doctor = require("../models/Doctor");
+const Assistant = require("../models/Assistant");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken")
+
+const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const PasswordReset = require("../models/PasswordReset");
 //unique string identifier
-const {v4 : uuidV4} = require("uuid");
+const { v4: uuidV4 } = require("uuid");
 
 //google auth
-const {OAuth2Client} = require('google-auth-library');
-const googleClient = new OAuth2Client("410085321469-ndnv3jtljc9fksblkbtdv9lvu6gnv614.apps.googleusercontent.com");
+const { OAuth2Client } = require("google-auth-library");
+const googleClient = new OAuth2Client(
+  "410085321469-ndnv3jtljc9fksblkbtdv9lvu6gnv614.apps.googleusercontent.com"
+);
 
 let transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-        user: 'Healthbloomapp@gmail.com', // generated ethereal user
-        pass: 'binarybrains', // generated ethereal password
-    }
-})
+  service: "gmail",
+  auth: {
+    user: "Healthbloomapp@gmail.com", // generated ethereal user
+    pass: "binarybrains", // generated ethereal password
+  },
+});
 
 async function verifyMail(email) {
-    let x = false;
-    await User.find(function (err,data){
-        for (let i = 0; i < data.length; i++){
-            if (data[i].Email === email) {
-                console.log("i found the email used in another account");
-                x = true;
-            }
-        }
-    })
-    return x;
-}
-
-exports.getAll = async (req,res) =>{
-    User.find(function (err,data){
-        if(err){
-            res.status(400).json("err in find method : " + err);
-        }
-        res.status(200).send({users:  data, message: "success"});
-    });
-}
-
-exports.getById = async (req,res) =>{
-    let id = req.params.id;
-    User.findById({_id:id})
-        .then(async user => {
-            if (user.Role === "Patient") {
-                let patient = await Patient.findById({_id: user._patient});
-                let obj = Object.assign({user}, {patient});
-                res.status(200).send(obj);
-            } else if (user.Role === "Doctor") {
-                let doctor = await Doctor.findById({_id: user._doctor});
-                let obj = Object.assign({user}, {doctor});
-                res.status(200).send(obj);
-
-            } else if (user.Role === "Assistant") {
-                let assistant = await Assistant.findById({_id: user._assistant});
-                let obj = Object.assign({user}, {assistant});
-                res.status(200).send(obj);
-
-            } else {
-                res.status(200).send(user);
-            }
-        })
-        .catch(err=>{
-            console.log(err);
-            res.json({
-                status : "Failed",
-                message : "error occurred while getting user from db"
-            })
-        })
-}
-
-exports.getPatients = async (callback) =>{
-    let patients = [];
-    await User.find(function (err, data) {
-        for (let i = 0; i < data.length; i++) {
-            if (data[i].Role === "Patient") {
-                patients.push(data[i]);
-            }
-        }
-    });
-    return callback(null,patients);
-}
-exports.getAllPatients = async (req,res) => {
-    this.getPatients(function (err, data) {
-        if (err) {
-            res.status(400).send(err);
-        }
-        res.status(200).send(data);
-    });
-}
-
-exports.addUser = async (req,res) =>{
-    let user = new User({
-        FirstName: req.body.FirstName,
-        LastName: req.body.LastName,
-        Email: req.body.Email,
-        Password: await bcrypt.hash(req.body.Password,10),
-        Address: req.body.Address,
-        Picture: req.body.Picture,
-        Phone: req.body.Phone,
-        Role : req.body.Role,
-        BirthDate : req.body.BirthDate
-    })
-
-    //we need to check the email here first
-    if ( !await verifyMail(user.Email)){
-        if(req.body.Role === "Patient"){
-            console.log("new patient");
-            let patient = new Patient({
-                _userId : user._id,
-                height : req.body.height
-            });
-            await patient.save();
-            user._patient= patient._id;
-        }
-        else if (req.body.Role === "Doctor"){
-            console.log("new Doctor");
-            let doctor = new Doctor({
-                Speciality: req.body.Speciality,
-                OfficeAddress: req.body.OfficeAddress,
-                ProfessionalCardNumber: req.body.ProfessionalCardNumber,
-                Insurance: req.body.Insurance,
-                LaborTime: req.body.LaborTime,
-                Description: req.body.Description,
-                ActsAndCare: req.body.ActsAndCare
-
-            });
-            await doctor.save();
-            user._doctor= doctor._id;
-        }
-        else if (req.body.Role === "Assistant"){
-            console.log("new Assistant");
-            let assistant = new Assistant({
-                Speciality: req.body.Speciality,
-                Description: req.body.Description,
-                ActsAndCare: req.body.ActsAndCare
-            });
-            await assistant.save();
-            user._assistant= assistant._id;
-        }
-        user.Role = req.body.Role;
-        await user.save();
-        res.status(200).send(user);
+  let x = false;
+  await User.find(function (err, data) {
+    for (let i = 0; i < data.length; i++) {
+      if (data[i].Email === email) {
+        console.log("i found the email used in another account");
+        x = true;
+      }
     }
-    else
-        res.status(400).send("this email already exists");
-
-
+  });
+  return x;
 }
+
+exports.getAll = async (req, res) => {
+  User.find(function (err, data) {
+    if (err) {
+      res.status(400).json("err in find method : " + err);
+    }
+    res.status(200).send({ users: data, message: "success" });
+  });
+};
+
+exports.getById = async (req, res) => {
+  let id = req.params.id;
+  User.findById({ _id: id })
+    .then(async (user) => {
+      if (user.Role === "Patient") {
+        let patient = await Patient.findById({ _id: user._patient });
+        let obj = Object.assign({ user }, { patient });
+        res.status(200).send(obj);
+      } else if (user.Role === "Doctor") {
+        let doctor = await Doctor.findById({ _id: user._doctor });
+        let obj = Object.assign({ user }, { doctor });
+        res.status(200).send(obj);
+      } else if (user.Role === "Assistant") {
+        let assistant = await Assistant.findById({ _id: user._assistant });
+        let obj = Object.assign({ user }, { assistant });
+        res.status(200).send(obj);
+      } else {
+        res.status(200).send(user);
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      res.json({
+        status: "Failed",
+        message: "error occurred while getting user from db",
+      });
+    });
+};
+
+exports.getPatients = async (callback) => {
+  let patients = [];
+  await User.find(function (err, data) {
+    for (let i = 0; i < data.length; i++) {
+      if (data[i].Role === "Patient") {
+        patients.push(data[i]);
+      }
+    }
+  });
+  return callback(null, patients);
+};
+exports.getAllPatients = async (req, res) => {
+  this.getPatients(function (err, data) {
+    if (err) {
+      res.status(400).send(err);
+    }
+    res.status(200).send(data);
+  });
+};
+
+exports.addUser = async (req, res) => {
+  let user = new User({
+    FirstName: req.body.FirstName,
+    LastName: req.body.LastName,
+    Email: req.body.Email,
+    Password: await bcrypt.hash(req.body.Password, 10),
+    Address: req.body.Address,
+    Picture: req.body.Picture,
+    Phone: req.body.Phone,
+    Role: req.body.Role,
+    BirthDate: req.body.BirthDate,
+  });
+
+  //we need to check the email here first
+  if (!(await verifyMail(user.Email))) {
+    if (req.body.Role === "Patient") {
+      console.log("new patient");
+      let patient = new Patient({
+        _userId: user._id,
+        height: req.body.height,
+      });
+      await patient.save();
+      user._patient = patient._id;
+    } else if (req.body.Role === "Doctor") {
+      console.log("new Doctor");
+      let doctor = new Doctor({
+        _userId: user._id,
+        Speciality: req.body.Speciality,
+        OfficeAddress: req.body.OfficeAddress,
+        ProfessionalCardNumber: req.body.ProfessionalCardNumber,
+        Insurance: req.body.Insurance,
+        LaborTime: req.body.LaborTime,
+        Description: req.body.Description,
+      });
+      await doctor.save();
+      user._doctor = doctor._id;
+    } else if (req.body.Role === "Assistant") {
+      console.log("new Assistant");
+      let assistant = new Assistant({
+        Speciality: req.body.Speciality,
+        Description: req.body.Description,
+        ActsAndCare: req.body.ActsAndCare,
+      });
+      await assistant.save();
+      user._assistant = assistant._id;
+    }
+    user.Role = req.body.Role;
+    await user.save();
+    res.status(200).send(user);
+  } else res.status(400).send("this email already exists");
+};
 
 // create token for login
 function createLoginToken(user){

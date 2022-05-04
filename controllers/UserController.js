@@ -95,6 +95,36 @@ exports.getAllPatients = async (req,res) => {
     });
 }
 
+// create token for login
+function createLoginToken(user){
+    let restUserInfo = null;
+    if(user.Role === "Patient"){
+        restUserInfo = user._patient;
+    }
+    else if(user.Role === "Doctor"){
+        restUserInfo = user._doctor;
+
+    }
+    else if(user.Role === "Assistant"){
+        restUserInfo = user._assistant;
+
+    }
+    const token = jwt.sign(
+        {
+            user_id: user._id,
+            Email: user.Email,
+            Role: user.Role,
+            restUserInfo : restUserInfo
+        },
+        process.env.JWT_KEY,
+        {
+            expiresIn: "2h",
+        }
+    );
+    return token;
+}
+
+//sign up
 exports.addUser = async (req,res) =>{
     let user = new User({
         FirstName: req.body.FirstName,
@@ -145,42 +175,19 @@ exports.addUser = async (req,res) =>{
             user._assistant= assistant._id;
         }
         user.Role = req.body.Role;
-        await user.save();
-        res.status(200).send(user);
+        await user.save()
+            .then(savedUser=>{
+                console.log(savedUser);
+                const token = createLoginToken(savedUser);
+                user.Token = token;
+                res.status(200).json(token);
+            })
+
     }
     else
         res.status(400).send("this email already exists");
 
 
-}
-
-// create token for login
-function createLoginToken(user){
-    let restUserInfo = null;
-    if(user.Role === "Patient"){
-        restUserInfo = user._patient;
-    }
-    else if(user.Role === "Doctor"){
-        restUserInfo = user._doctor;
-
-    }
-    else if(user.Role === "Assistant"){
-        restUserInfo = user._assistant;
-
-    }
-    const token = jwt.sign(
-        {
-            user_id: user._id,
-            Email: user.Email,
-            Role: user.Role,
-            restUserInfo : restUserInfo
-        },
-        process.env.JWT_KEY,
-        {
-            expiresIn: "2h",
-        }
-    );
-    return token;
 }
 
 exports.login = async (req,res)=>{

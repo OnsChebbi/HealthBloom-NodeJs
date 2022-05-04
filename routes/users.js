@@ -16,7 +16,7 @@ router.get('/',authenticateToken,userController.getAll);
 router.post('/addUser',userController.addUser);
 router.post("/login", userController.login);
 router.get('/updatePatient/:id', patientController.updatePatientAction);
-router.get('/updateUser/:id',userController.updateUser);
+router.put('/updateUser/:id',userController.updateUser);
 router.get('/deleteUser/:id',userController.deleteUser);
 router.get('/getAllPatients',userController.getAllPatients);
 router.get('/deletePatient/:id',patientController.deletePatient);
@@ -153,7 +153,7 @@ function authenticateToken(req,res,next) {
 // })
 
 /* GET assistants listing. */
-router.get('/getassistants',AssistantController.getAllAssistants)
+//router.get('/getassistants',AssistantController.getAllAssistants)
 
 /* GET assistant by id. */
 router.get('/getassistants/:id',AssistantController.getAssistantByID)
@@ -166,6 +166,9 @@ router.delete('/deleteassistants/:id',AssistantController.DeleteAssistantsById)
 
 /* delete All assistants */
 router.delete('/deleteassistant',AssistantController.DeleteAllAssistants)
+
+
+
 
 
 exports.DeleteAllAssistants=(req,res)=>{

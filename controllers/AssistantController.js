@@ -1,4 +1,12 @@
 var Assistant = require('../models/Assistant');
+var User = require('../models/User');
+
+
+
+const mongoose = require("mongoose");
+const {ObjectID} = require("mongodb");
+//const User = require("./User");
+
 
 
 exports.getAllAssistants=(req,res)=>{
@@ -13,11 +21,16 @@ exports.getAllAssistants=(req,res)=>{
 
 
 exports.getAssistantByID=async(req,res)=>{
-    Assistant.findById(req.params.id,(err,data)=> {
+
+    let id= req.params.id;
+    const objectId = new ObjectID(id.trim());
+
+    Assistant.findById( objectId,(err,data)=> {
         if(err) throw err;
         res.status(200).send(data);
 
     });
+
 
 }
 
@@ -55,3 +68,7 @@ exports.DeleteAllAssistants=(req,res)=>{
     });
 
 }
+
+
+
+

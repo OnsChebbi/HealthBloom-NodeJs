@@ -5,6 +5,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require('cors');
 const productsRoutes = require('./routes/products-routes');
+const couponsRoutes = require('./routes/coupons-routes');
 const reviewsRoutes = require('./routes/reviews-routes');
 const HttpError = require('./models/http-error');
 
@@ -25,6 +26,7 @@ var articleRouter = require("./routes/MagazineRouter/articleRouter");
 var forumRouter = require("./routes/ForumRouter/forumRouter");
 var MedicalFileRouter = require("./routes/MedicalFileRoutes");
 var doctorRouter = require("./routes/doctor");
+const bodyParser = require("body-parser");
 
 var app = express();
 
@@ -35,7 +37,7 @@ app.use(cors());
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");
-
+app.use('/api/products/stripe/webhook', bodyParser.raw({type: "*/*"}))
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -59,6 +61,7 @@ app.use((req, res, next) => {
 });
 
 app.use("/api/products", productsRoutes);
+app.use("/api/coupons", couponsRoutes);
 app.use("/api/reviews", reviewsRoutes);
 app.use("/", indexRouter);
 app.use("/articles", articleRouter);

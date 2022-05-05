@@ -11,6 +11,8 @@ const stripe = require('stripe')('sk_test_51KqTxUBfP4XL5It4LoSuJhybl2OSCoZyvuVmU
 
 const YOUR_DOMAIN = 'http://localhost:3000/shop'
 
+const endpointSecret = 'whsec_46ded17522ba46705ede07c5c51e12536cc9053d3beccaacdb51a44df8fbccb6';
+
 const getProductById = async (req, res, next) => {
     const productId = req.params.pid;
     let product;
@@ -61,6 +63,7 @@ const createProduct = async (req, res, next) => {
         quantity: quantity,
         category,
         image: req.file.path,
+        date: new Date(),
         reviews: []
     });
 
@@ -179,13 +182,47 @@ const getPayments = async (req, res, next) => {
     try {
         session = await stripe.checkout.sessions.retrieve(sessionId);
         items = await stripe.checkout.sessions.listLineItems(sessionId);
-        console.log(session);
     } catch (e) {
         console.log(e);
     }
 
     res.json({items:items.data, session});
 
+};
+
+const stripeWebhook = async (request, response, next) => {
+
+    const sig = request.headers['stripe-signature'];
+
+    let event;
+
+    try {
+        event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
+    }
+    catch (err) {
+        console.log(err.message);
+        response.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    // Handle the event
+    switch (event.type) {
+        case 'payment_intent.succeeded':
+            const paymentIntent = event.data.object;
+            console.log(paymentIntent);
+            console.log('PaymentIntent was successful!');
+            break;
+        case 'payment_method.attached':
+            const paymentMethod = event.data.object;
+            console.log(paymentMethod)
+            console.log('PaymentMethod was attached to a Customer!');
+            break;
+        // ... handle other event types
+        default:
+            console.log(`Unhandled event type ${event.type}`);
+    }
+
+    // Return a response to acknowledge receipt of the event
+    response.json({received: true});
 };
 
 module.exports = {
@@ -195,5 +232,6 @@ module.exports = {
     updateProductById,
     deleteProductById,
     checkoutCart,
-    getPayments
+    getPayments,
+    stripeWebhook
 };

@@ -4,6 +4,7 @@ const fileUpload = require('../middleware/file-upload');
 
 
 const productsControllers = require('../controllers/products-controller')
+const bodyParser = require("body-parser");
 
 
 const router = express.Router();
@@ -12,7 +13,7 @@ const router = express.Router();
 router.get('/', productsControllers.getProducts);
 router.get('/:pid', productsControllers.getProductById);
 
-// router.get('/user/:uid', placesControllers.getPlacesByUserId);
+// router.get('/user/:uid', placesControllers.getP  lacesByUserId);
 
 router.post('/',
     fileUpload.single('image'),
@@ -60,6 +61,7 @@ router.delete('/:pid', productsControllers.deleteProductById);
 
 router.post('/checkout', productsControllers.checkoutCart);
 router.get('/checkout/:sessionId', productsControllers.getPayments);
+router.post('/stripe/webhook', productsControllers.stripeWebhook);
 
 
 module.exports = router;

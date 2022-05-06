@@ -150,6 +150,11 @@ const deleteProductById = async (req, res, next) => {
 
 const checkoutCart = async (req, res, next) => {
     const sessionId = req.params.pid;
+    let coupon;
+    let session ;
+    if (req.body.discount !=0) {
+         coupon = await stripe.coupons.create( {percent_off: req.body.discount, currency: 'usd'});
+    }
 
     const line_items = req.body.items.map((item) => {
 
@@ -163,13 +168,25 @@ const checkoutCart = async (req, res, next) => {
             quantity: item.quantity
         };
     })
+    if (coupon) {
+         session = await stripe.checkout.sessions.create({
+            line_items: line_items,
+            mode: 'payment',
+            discounts: [{
+                coupon : coupon.id
+            }],
+            success_url: `${YOUR_DOMAIN}/invoice?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${YOUR_DOMAIN}/checkout`,
+        });
+    }else {
+         session = await stripe.checkout.sessions.create({
+            line_items: line_items,
+            mode: 'payment',
+            success_url: `${YOUR_DOMAIN}/invoice?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${YOUR_DOMAIN}/checkout`,
+        });
+    }
 
-    const session = await stripe.checkout.sessions.create({
-        line_items: line_items,
-        mode: 'payment',
-        success_url: `${YOUR_DOMAIN}/invoice?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${YOUR_DOMAIN}/checkout`,
-    });
 
     res.json({url: session.url});
 };

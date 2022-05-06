@@ -24,6 +24,25 @@ const getCouponById = async (req, res, next) => {
     }
     res.json({coupon: coupon.toObject({getters: true})});
 }
+const getCouponByName = async (req, res, next) => {
+    const couponName = req.params.name;
+    let coupon;
+    try {
+        coupon = await Coupon.findOne({name: couponName});
+    } catch (e) {
+        // const error = new HttpError('could not find a coupon.', 500);
+        // return next(error);
+        res.json({});
+    }
+    if (!coupon) {
+        // return next(new HttpError('Could not find a coupon for the provided id.', 404));
+        res.json({});
+
+    }else {
+        res.json({coupon: coupon.toObject({getters: true})});
+
+    }
+}
 
 const getCoupons = async (req, res, next) => {
 
@@ -143,5 +162,6 @@ module.exports = {
     getCoupons,
     getCouponById,
     updateCouponById,
-    deleteCouponById
+    deleteCouponById,
+    getCouponByName
 };

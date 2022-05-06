@@ -12,6 +12,7 @@ const router = express.Router();
 
 router.get('/', couponsControllers.getCoupons);
 router.get('/:cid', couponsControllers.getCouponById);
+router.get('/name/:name', couponsControllers.getCouponByName);
 router.post('/',
     [
         check('name')

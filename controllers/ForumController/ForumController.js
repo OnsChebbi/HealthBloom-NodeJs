@@ -134,6 +134,23 @@ exports.addCommentToThread= async (request,response)=>{
     }
 }
 
+exports.editComment= async (request,response)=>{
+    //console.log(request.body)
+    commentId=request.body.commentId;
+    content=request.body.body;
+
+    try{
+        let com = await ThreadComment.editComment(content,threadId);
+        response.send(com);
+
+    }
+    catch(error){
+        response.json({success:false,message:error});
+    
+    }
+}
+
+
 exports.deleteCommentFromThread= async (request,response)=>{
     //console.log(request.body)
     let id=request.params.id;

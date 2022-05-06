@@ -106,3 +106,27 @@ exports.addCommentToThread =  async (body, threadId) => {
         })
     })
 }
+
+exports.editComment =  async (body, commentId) => {
+ 
+    let newId = mongoose.Types.ObjectId(commentId)
+    let commObj = await ThreadComment.findById(newId);
+    //console.log(thrObj)
+
+    return new Promise((resolve, reject) => {
+        
+        mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
+
+            commObj.body = body
+            
+            return commObj.save().then((data) => {                 
+                thComObj = {_id : data._id, body:data.body }
+
+            
+                resolve(thComObj)
+
+            });
+
+        })
+    })
+}

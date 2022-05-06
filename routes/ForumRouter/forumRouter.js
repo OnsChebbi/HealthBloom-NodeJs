@@ -13,6 +13,7 @@ router.get('/get-threads-by-section/:sectionId',forumSectionController.getAllThr
 router.get('/get-thread/:id',forumSectionController.getOneThread);
 router.delete('/delete-thread/:id',forumSectionController.deleteThread);
 router.post('/add-comment-to-thread',forumSectionController.addCommentToThread);
+router.put('/edit-comment',forumSectionController.editComment);
 router.delete('/delete-comment-from-thread/:id',forumSectionController.deleteCommentFromThread);
 
 router.post('/add-like-to-comment',forumSectionController.addLikeToComment);

@@ -38,7 +38,7 @@ exports.getArticlesByCategoryController=async (request,response)=>{
 catch(error){
     response.json({success:false,message:error});
 
-
+}}
 exports.getAllArticlesController=async (request,response)=>{
     try{
         let articles= await Article.getAllArticles()

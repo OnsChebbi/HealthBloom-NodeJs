@@ -41,7 +41,8 @@ exports.getAllThreadsBySection = (sectionId) => {
             () => {
                 console.log("databse connected")
                 //Find all threads
-                return Thread.find({section:mongoose.Types.ObjectId(sectionId)}).populate('comments').exec();
+                return Thread.find({section:mongoose.Types.ObjectId(sectionId)}).populate({path:'comments', populate:{path:'user'}
+                }).populate('user').exec();
             }
         )
             .then(threads => {
@@ -62,7 +63,15 @@ exports.getOneThread = (id) => {
     return new Promise((resolve, reject) => {
         var idThread = mongoose.Types.ObjectId(id)
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
-            return Thread.findById(idThread).populate('comments').populate('initContent');
+            return Thread.findById(idThread).populate({path:'comments', populate:[{path:'user',
+            populate:{
+                path: '_doctor',
+                //match: { Role: 'Doctor' }
+            }}, {path:'likes'}]
+            }).populate({path:'initContent', populate:{path:'likes'}}).populate({path:'user', populate:{
+            path: '_doctor',
+            //match: { Role: 'Doctor' }
+        }});
 
         }).then(threads => {
             resolve(threads)
@@ -99,12 +108,13 @@ exports.deleteThread = async (id) => {
 } 
 
 
-exports.addThread = (title, body,sectionId) => {
+exports.addThread = (title, body,sectionId, userId) => {
     
     let current = new Date();
     const date = `${current.getDate()}-${current.getMonth() + 1}-${current.getFullYear()} ${current.getHours()}:${current.getMinutes()}`;
 
     let sectionIdMong = mongoose.Types.ObjectId(sectionId)
+    let userIdMong = mongoose.Types.ObjectId(userId)
 
     return new Promise((resolve, reject) => {
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
@@ -120,6 +130,7 @@ exports.addThread = (title, body,sectionId) => {
             firstContent.save();
             thread.initContent = firstContent._id;
             thread.section = sectionIdMong;
+            thread.user = userIdMong;
 
             console.log("before insert")
             return thread.save()

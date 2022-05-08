@@ -21,11 +21,11 @@ exports.addLikeToComment = async (userId,commentId) => {
         return;
     }*/
 
-    if(newComment.likes.length > 0)
+    /*if(newComment.likes.length > 0)
     {
         console.log('already added like');
         return;
-    }
+    }*/
     
 
     return new Promise((resolve, reject) => {
@@ -34,6 +34,8 @@ exports.addLikeToComment = async (userId,commentId) => {
                 _id: new mongoose.Types.ObjectId(),
 
             })
+            thComLike.user = userIdMong;
+
             return thComLike.save()
             
         }).then((obj) => {
@@ -54,13 +56,15 @@ exports.deleteLikeFromComment = async (userId, commentId) => {
     //let userIdMong = mongoose.Types.ObjectId(userId)
     let commentIdMong = mongoose.Types.ObjectId(commentId)
 
-    let newComment = await ThreadComment.findById(commentIdMong)
-
+    let newComment = await ThreadComment.findById(commentIdMong).populate('likes')
+    console.log(JSON.stringify(newComment))
     return new Promise((resolve, reject) => {
         let id=''
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
-            newComment.likes.forEach((element,index,object) => {
-                //if(element._id === commentIdMong)
+            if(newComment.likes) newComment.likes.forEach((element,index,object) => {
+                //console.log(JSON.stringify(element.user))
+                //console.log(JSON.stringify(userId))
+                if(JSON.stringify(element.user) === JSON.stringify(userId))
                 {
                     id = element._id
                     console.log("found " + element._id)

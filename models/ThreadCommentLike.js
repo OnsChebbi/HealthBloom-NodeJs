@@ -3,8 +3,7 @@ var Schema = mongoose.Schema;
 
 const threadCommentLikeSchema = Schema(
     {
-        //userId : {
-
+        user : {type: Schema.Types.ObjectId,ref:'user'}
     }
 )
 

@@ -16,7 +16,9 @@ let schemaThreadComment = Schema({
         type: String,
 
     },
-    likes : [{type: Schema.Types.ObjectId,ref:'threadCommentLike'}]
+    likes : [{type: Schema.Types.ObjectId,ref:'threadCommentLike'}],
+    user : {type: Schema.Types.ObjectId,ref:'user'},
+
 })
 
 let ThreadComment = mongoose.model('threadComment', schemaThreadComment)

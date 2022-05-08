@@ -17,6 +17,7 @@ let schemaThread = Schema({
     initContent : {type: Schema.Types.ObjectId,ref:'threadComment'},
 
     comments : [{type: Schema.Types.ObjectId,ref:'threadComment'}],
+    user : {type: Schema.Types.ObjectId,ref:'user'},
     section : {type: Schema.Types.ObjectId,ref:'forumSection'}
 })
 

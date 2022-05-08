@@ -24,9 +24,10 @@ exports.addThread=async (request,response)=>{
     console.log(request.body)
     title=request.body.title;
     body=request.body.body;
+    userId=request.body.userId;
     sectionId = request.body.sectionId ;
     try{
-        Thread.addThread(title,body,sectionId);
+        Thread.addThread(title,body,sectionId,userId);
         response.json({success:true,message:"Thread added successfully"});
 
     }
@@ -122,9 +123,9 @@ exports.addCommentToThread= async (request,response)=>{
     //console.log(request.body)
     threadId=request.body.threadId;
     content=request.body.body;
-
+    userId = request.body.userId;
     try{
-        let com = await ThreadComment.addCommentToThread(content,threadId);
+        let com = await ThreadComment.addCommentToThread(content,threadId,userId);
         response.send(com);
 
     }

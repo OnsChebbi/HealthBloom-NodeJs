@@ -17,7 +17,10 @@ exports.getAllThreadComments = () => {
             () => {
                 console.log("databse connected")
                 //Find all threadComments
-                return ThreadComment.find();
+                return ThreadComment.find().populate('user').populate({
+                    path: '_doctor',
+                    match: { Role: 'Doctor' }
+                });
             }
         )
             .then(threadComments => {
@@ -37,7 +40,10 @@ exports.getOneThreadComment = (id) => {
     return new Promise((resolve, reject) => {
         var idThreadComment = mongoose.Types.ObjectId(id)
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
-            return ThreadComment.findById(idThreadComment);
+            return ThreadComment.findById(idThreadComment).populate('user').populate({
+                path: '_doctor',
+                match: { Role: 'Doctor' }
+            });
 
         }).then(threadComments => {
             resolve(threadComments)
@@ -52,12 +58,12 @@ exports.deleteThreadComment = async (id) => {
  
     var idThreadComment = mongoose.Types.ObjectId(id)
     let thrComment = await ThreadComment.findById(idThreadComment)
-
+    
     return new Promise((resolve, reject) => {
 
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
             
-            thrComment.likes.forEach(element => {
+            if(thrComment != null && thrComment.likes != null) thrComment.likes.forEach(element => {
                 ThreadCommentLike.findOneAndRemove({_id: mongoose.Types.ObjectId(element)}).exec()
             });
 
@@ -73,12 +79,13 @@ exports.deleteThreadComment = async (id) => {
 } 
 
 
-exports.addCommentToThread =  async (body, threadId) => {
+exports.addCommentToThread =  async (body, threadId,userId) => {
 
     let current = new Date();
     const date = `${current.getDate()}-${current.getMonth() + 1}-${current.getFullYear()} ${current.getHours()}:${current.getMinutes()}`;
   
     let newId = mongoose.Types.ObjectId(threadId)
+    let userIdMong = mongoose.Types.ObjectId(userId)
     let thrObj = await Thread.findById(newId);
     //console.log(thrObj)
 
@@ -91,7 +98,8 @@ exports.addCommentToThread =  async (body, threadId) => {
                 body: body,
                 dateCreated: date
             })
-            
+            threadComment.user = userIdMong;
+
             return threadComment.save().then((data) => {
                 thrObj.comments.push(data._id);
                 thrObj.save();

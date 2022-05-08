@@ -10,12 +10,12 @@ const router = express.Router();
 router.get('/', reviewsControllers.getReviews);
 router.get('/:rid', reviewsControllers.getReviewById);
 
-router.get('/user/:uid', reviewsControllers.getReviewsByUserId);
+// router.get('/user/:uid', reviewsControllers.getReviewsByUserId);
 router.get('/product/:pid', reviewsControllers.getReviewsByProductId);
 
 router.post('/',
     [
-        check('title')
+        check('name')
             .not()
             .isEmpty(),
         check('message')
@@ -25,9 +25,11 @@ router.post('/',
             .not()
             .isEmpty()
             .isInt({min: 0, max: 5}),
-        check('user')
+        check('date')
             .not()
             .isEmpty(),
+        check('email')
+            .isEmail(),
         check('product')
             .not()
             .isEmpty()
@@ -36,22 +38,21 @@ router.post('/',
 
 router.patch('/:rid',
     [
-            check('title')
-                .not()
-                .isEmpty(),
-            check('message')
-                .isLength({min: 1})
-                .notEmpty(),
-            check('rating', 'Rating must be a number between 0 and 5')
-                .not()
-                .isEmpty()
-                .isInt({min: 0, max: 5}),
-            check('user')
-                .not()
-                .isEmpty(),
-            check('product')
-                .not()
-                .isEmpty()
+        check('name')
+            .not()
+            .isEmpty(),
+        check('message')
+            .isLength({min: 1})
+            .notEmpty(),
+        check('rating', 'Rating must be a number between 0 and 5')
+            .not()
+            .isEmpty()
+            .isInt({min: 0, max: 5}),
+        check('date')
+            .not()
+            .isEmpty(),
+        check('email')
+            .isEmail()
     ], reviewsControllers.updateReviewById);
 
 router.delete('/:pid', reviewsControllers.deleteReviewById);

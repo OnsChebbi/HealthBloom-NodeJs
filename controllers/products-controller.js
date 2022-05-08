@@ -4,15 +4,21 @@ const HttpError = require("../models/http-error");
 const Product = require('../models/product');
 const Review = require('../models/review');
 const mongoose = require("mongoose");
+const {log} = require("debug");
+
+const stripe = require('stripe')('sk_test_51KqTxUBfP4XL5It4LoSuJhybl2OSCoZyvuVmUW5Iv5mgEeLbEqEYRHlKQrFrPPfGVb1Fyqn7EdPVMbxKP0ur2WSZ00DCaBWq5B');
 
 
+const YOUR_DOMAIN = 'http://localhost:3000/shop'
+
+const endpointSecret = 'whsec_46ded17522ba46705ede07c5c51e12536cc9053d3beccaacdb51a44df8fbccb6';
 
 const getProductById = async (req, res, next) => {
     const productId = req.params.pid;
     let product;
     try {
-        product = await Product.findById(productId);
-    }catch (e) {
+        product = await Product.findById(productId).populate('reviews');
+    } catch (e) {
         const error = new HttpError('could not find a product.', 500);
         return next(error);
     }
@@ -28,7 +34,7 @@ const getProducts = async (req, res, next) => {
     try {
         products = await Product.find();
 
-    }catch (e) {
+    } catch (e) {
         return next(new HttpError('Fetching products failed. Please try again later.', 500));
     }
     if (!products || products.length === 0) {
@@ -41,6 +47,7 @@ const getProducts = async (req, res, next) => {
 const createProduct = async (req, res, next) => {
 
     const errors = validationResult(req);
+    console.log(errors);
     if (!errors.isEmpty()) {
         console.log(errors.errors[0].msg);
         // const error = new HttpError('Invalid inputs passed, please check your data.', 422);
@@ -55,13 +62,14 @@ const createProduct = async (req, res, next) => {
         price,
         quantity: quantity,
         category,
-        image: 'https://upload.wikimedia.org/wikipedia/commons/d/df/NYC_Empire_State_Building.jpg',
+        image: req.file.path,
+        date: new Date(),
         reviews: []
     });
 
     try {
         await createdProduct.save();
-    }catch (e) {
+    } catch (e) {
 
         const error = new HttpError('Creating product failed, please try again', 500);
         return next(error);
@@ -84,7 +92,7 @@ const updateProductById = async (req, res, next) => {
     let product;
     try {
         product = await Product.findById(productId);
-    }catch (e) {
+    } catch (e) {
         const error = new HttpError('could not find a product.', 500);
         return next(error);
     }
@@ -92,8 +100,6 @@ const updateProductById = async (req, res, next) => {
     if (!product) {
         return next(new HttpError('Could not find a product for the provided id.', 404));
     }
-
-
 
 
     product.name = name;
@@ -105,7 +111,7 @@ const updateProductById = async (req, res, next) => {
     try {
         await product.save();
 
-    }catch (e) {
+    } catch (e) {
         const error = new HttpError('could not update  product.', 500);
         return next(error);
     }
@@ -120,19 +126,20 @@ const deleteProductById = async (req, res, next) => {
     let product;
     try {
         product = await Product.findById(productId);
-    }catch (e) {
+    } catch (e) {
         const error = new HttpError('could not delete a product.', 500);
         return next(error);
     }
 
 
     try {
-        const sess = await  mongoose.startSession();
+        // await product.remove();
+        const sess = await mongoose.startSession();
         sess.startTransaction();
-        Review.deleteMany({_id: { $in: product.reviews}},err => console.log(err) ).session(sess)
-        await  product.remove({session: sess});
+        Review.deleteMany({_id: {$in: product.reviews}}, err => console.log(err)).session(sess)
+        await product.remove({session: sess});
         await sess.commitTransaction()
-    }catch (e) {
+    } catch (e) {
         return next(new HttpError('Could not delete a product', 404));
 
     }
@@ -141,10 +148,90 @@ const deleteProductById = async (req, res, next) => {
 
 }
 
+const checkoutCart = async (req, res, next) => {
+    const sessionId = req.params.pid;
+
+    const line_items = req.body.items.map((item) => {
+
+
+        return {
+            name: item.name,
+            description: item.name,
+            images: ['https://www.ubuy.tn/productimg/?image=aHR0cHM6Ly9tLm1lZGlhLWFtYXpvbi5jb20vaW1hZ2VzL0kvODEyM3llbHZHa0wuX0FDX1NMMTUwMF8uanBn.jpg'],
+            amount: item.price * 100,
+            currency: 'usd',
+            quantity: item.quantity
+        };
+    })
+
+    const session = await stripe.checkout.sessions.create({
+        line_items: line_items,
+        mode: 'payment',
+        success_url: `${YOUR_DOMAIN}/invoice?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${YOUR_DOMAIN}/checkout`,
+    });
+
+    res.json({url: session.url});
+};
+
+const getPayments = async (req, res, next) => {
+    const sessionId = req.params.sessionId;
+
+    let session;
+    let items;
+    try {
+        session = await stripe.checkout.sessions.retrieve(sessionId);
+        items = await stripe.checkout.sessions.listLineItems(sessionId);
+    } catch (e) {
+        console.log(e);
+    }
+
+    res.json({items:items.data, session});
+
+};
+
+const stripeWebhook = async (request, response, next) => {
+
+    const sig = request.headers['stripe-signature'];
+
+    let event;
+
+    try {
+        event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
+    }
+    catch (err) {
+        console.log(err.message);
+        response.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    // Handle the event
+    switch (event.type) {
+        case 'payment_intent.succeeded':
+            const paymentIntent = event.data.object;
+            console.log(paymentIntent);
+            console.log('PaymentIntent was successful!');
+            break;
+        case 'payment_method.attached':
+            const paymentMethod = event.data.object;
+            console.log(paymentMethod)
+            console.log('PaymentMethod was attached to a Customer!');
+            break;
+        // ... handle other event types
+        default:
+            console.log(`Unhandled event type ${event.type}`);
+    }
+
+    // Return a response to acknowledge receipt of the event
+    response.json({received: true});
+};
+
 module.exports = {
     getProductById,
     getProducts,
     createProduct,
     updateProductById,
-    deleteProductById
+    deleteProductById,
+    checkoutCart,
+    getPayments,
+    stripeWebhook
 };

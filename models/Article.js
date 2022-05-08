@@ -1,14 +1,12 @@
 const { Db } = require('mongodb');
 const mongoose = require('mongoose');
 var ObjectId = require('mongoose').Types.ObjectId;
-const nodemailer = require('nodemailer')
-const path = require('path')
+var nodemailer = require('nodemailer');
 const User = require('./User');
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
-const accountSid = "ACe3c2b2afbf500ba39222e531455087db";
-const authToken = "c8abaa21047c04d9c3209901c8099a23";
-const client = require('twilio')(accountSid, authToken);
 
+const current = new Date();
+const date = `${current.getDate()}/${current.getMonth() + 1}/${current.getFullYear()}`;
 
 let schemaArticle = mongoose.Schema({
     title: {
@@ -23,16 +21,13 @@ let schemaArticle = mongoose.Schema({
         type: String,
         required: true
     },
-    category: {
-        type: String,
-        required: true
-    },
     image: {
         type: String,
         required: false
     },
     dateCreation: {
         type: String,
+        default: date
     },
     nbLikes: {
         type: Number,
@@ -78,30 +73,6 @@ exports.getAllArticles = () => {
     })
 
 }
-
-exports.getArticleByCategory = (category) => {
-
-    return new Promise((resolve, reject) => {
-        console.log("new promise")
-        mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(
-            () => {
-                
-                return Article.find({category:category});
-            }
-        )
-            .then(articles => {
-                //resolve the result of the promise
-                resolve(articles)
-                console.log(articles)
-
-            })
-            //catches errors
-            .catch(err => reject(err))
-
-    })
-
-}
-
 exports.getOneArticleDetails = (id) => {
     return new Promise((resolve, reject) => {
         var idArticle = mongoose.Types.ObjectId(id)
@@ -134,67 +105,16 @@ exports.getAuthorDetails = (id) => {
 }
 
 
-exports.getSubscribers = (title) => {
+exports.getSubscribers = () => {
+    console.log("model")
     return new Promise((resolve, reject) => {
-        console.log("new promise")
-        mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(
-            () => {
-                console.log("databse connected")
-                //Find all articles
-                return User.find({newsLetter:true});
-            }
-        )
-            .then(articles => {
-                //resolve the result of the promise
-                articles.forEach(element => {
-                
-                    var mailOptions = {
-                        from: 'HealthBloom',
-                        to:element.Email,
-                        subject: "New Article.",
-                        html:"<!DOCTYPE html>"+
-"<html>"+
-"<head>"+
- "  <title>A new article has been added!</title>"+
-"</head>"+
-"<body>"+
-  "<h2 >Hello "+ element.FirstName+" </h2>"+
-  "<p>We first thank you for being a subscriber to our Newsletter.  </p>"+
-  "<h5>A new article has been added to our medical magazine!</h5>"+
- " <h3>Take a look! </h3>"+
- " <h3><bold> Read More on : "+title+"</bold></h3>"+
-"</body>"+
-"</html>",
-                       
+        mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
+            return User.find();
 
-                        
-                      };
-                    var transporter = nodemailer.createTransport({
-                        service: 'gmail',
-                        auth: {
-                            user: 'healthbloomapp@gmail.com',
-                            pass: 'binarybrains'
-                        }
-                      });
+        }).then(author => {
+            resolve(author)
 
-                     
-                      transporter.sendMail(mailOptions, (error, info) => {
-                        if (error) {
-                          console.log(error);
-                        } else {
-                          res.send({
-                            status: "success",
-                          });
-                          console.log("Email sent: " + info.response);
-                        }
-                      });
-                });
-                resolve(articles)
-                console.log(articles)
-
-            })
-            //catches errors
-            .catch(err => reject(err))
+        }).catch(err => reject(err))
 
     })
 
@@ -218,6 +138,44 @@ exports.deleteArticle = (id) => {
 
 }
 
+exports.likeArticle = (id) => {
+    var ida = mongoose.Types.ObjectId(id)
+
+    console.log('promise like')
+
+    return new Promise((resolve, reject) => {
+
+        mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
+            return Article.findOneAndUpdate({ _id: ida }, { $inc: { nbLikes: 1 } })
+
+        }).then(() => {
+
+            resolve(true)
+
+        }).catch(err => reject(err))
+
+    })
+
+}
+
+exports.unlikeArticle = (id) => {
+    var ida = mongoose.Types.ObjectId(id)
+
+
+    return new Promise((resolve, reject) => {
+
+        mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
+            return Article.findOneAndUpdate({ _id: ida }, { $inc: { nbLikes: -1 } })
+
+        }).then(() => {
+
+            resolve(true)
+
+        }).catch(err => reject(err))
+
+    })
+
+}
 
 exports.promoteArticle = (id) => {
     var ida = mongoose.Types.ObjectId(id)
@@ -277,47 +235,6 @@ exports.incrementComments = (id) => {
 
 }
 
-
-exports.incrementLikes = (id) => {
-    var ida = mongoose.Types.ObjectId(id)
-
-    console.log('promise like')
-
-    return new Promise((resolve, reject) => {
-
-        mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
-            return Article.findOneAndUpdate({ _id: ida }, { $inc: { nbLikes: 1 } })
-
-        }).then(() => {
-
-            resolve(true)
-
-        }).catch(err => reject(err))
-
-    })
-
-}
-
-exports.decrementLikes = (id) => {
-    var ida = mongoose.Types.ObjectId(id)
-
-    console.log('promise like')
-
-    return new Promise((resolve, reject) => {
-
-        mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
-            return Article.findOneAndUpdate({ _id: ida }, { $inc: { nbLikes: -1 } })
-
-        }).then(() => {
-
-            resolve(true)
-
-        }).catch(err => reject(err))
-
-    })
-
-}
-
 exports.decrementComments = (id) => {
     var ida = mongoose.Types.ObjectId(id)
 
@@ -338,22 +255,39 @@ exports.decrementComments = (id) => {
 
 }
 
-exports.addArticle = (title, description, author, image, category) => {
+exports.addArticle = (title, description, author, image) => {
     return new Promise((resolve, reject) => {
-        const current = new Date();
-        const date = `${current.getDate()}/${current.getMonth() + 1}/${current.getFullYear()}`;
         mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
             console.log("1")
             let article = new Article({
                 title: title,
                 description: description,
-                category: category,
-                dateCreation: date,
                 author: author,
                 image: image
 
             })
-            
+            var mailOptions = {
+                from: 'HealthBloom',
+                to: "ons.chebbi@esprit.tn",
+                subject: 'A new article has been added!',
+                text: title + " Read more.."
+            };
+            var transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: 'healthbloomapp@gmail.com',
+                    pass: 'binarybrains'
+                }
+            });
+
+
+            transporter.sendMail(mailOptions, function (error, info) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    console.log('Email sent: ' + info.response);
+                }
+            });
             return article.save()
 
         })
@@ -431,26 +365,27 @@ exports.unsubscribeNewsLetter = (id) => {
 }
 
 exports.sendSubscriptionSMS = (tel,name) => {
-  
+    const accountSid = "AC433124b95f3ca73156447265c0f0ca81";
+    const authToken = "ff7d42068e0cbbd6a68a9fca2b30e41c";
+    const client = require('twilio')(accountSid, authToken);
 
     client.messages
         .create({
-            body: 'Welcome to HealthBloom! Congratulations '+name+'! You have been subscribed to our Newsletter! You will get a notification on you email account each time we add a new article!',
-            from: '+12674406073',
-            to: '+216' + tel
+            body: 'Congratulations '+name+'! You have been subscribed to our Newsletter! You will get a notification on you email account each time we add a new article!',
+            from: '+18453733520',
+            to: '+' + tel
         })
 }
 
 exports.sendUnubscriptionSMS = (tel,name) => {
-  
+    const accountSid = "AC433124b95f3ca73156447265c0f0ca81";
+    const authToken = "ff7d42068e0cbbd6a68a9fca2b30e41c";
+    const client = require('twilio')(accountSid, authToken);
 
     client.messages
         .create({
-            body: 'Welcome to HealthBloom '+name+'! You have been unsubscribed from our newsletter! Hope you will subscribe again soon .Our Articles are waiting for you',
-            from: '+12674406073',
-            to: '+216' + tel
+            body: 'Hello '+name+'! You have been unsubscribed from our newsletter! Hope you will subscribe again soon .Our Articles are waiting for you',
+            from: '+18453733520',
+            to: '+' + tel
         })
 }
-
-
-

@@ -22,20 +22,20 @@ const getReviewById = async (req, res, next) => {
     res.json({review: review.toObject({getters: true})});
 }
 
-// const getReviewsByUserId = async (req, res, next) => {
-//     const userId = req.params.uid;
-//     let reviews
-//     try {
-//         reviews = await Review.find({user: userId});
-//
-//     }catch (e) {
-//         return next(new HttpError('Fetching reviews failed. Please try again later.', 500));
-//     }
-//     if (!reviews || reviews.length === 0) {
-//         return next(new HttpError('Could not find reviews for the provided user id.', 404));
-//     }
-//     res.json({reviews: reviews.map(review => review.toObject({getters: true}))});
-// };
+const getReviewsByUserId = async (req, res, next) => {
+    const userId = req.params.uid;
+    let reviews
+    try {
+        reviews = await Review.find({user: userId});
+
+    }catch (e) {
+        return next(new HttpError('Fetching reviews failed. Please try again later.', 500));
+    }
+    if (!reviews || reviews.length === 0) {
+        return next(new HttpError('Could not find reviews for the provided user id.', 404));
+    }
+    res.json({reviews: reviews.map(review => review.toObject({getters: true}))});
+};
 
 const getReviewsByProductId = async (req, res, next) => {
     const productId = req.params.pid;
@@ -77,13 +77,12 @@ const createReview = async (req, res, next) => {
         return next(error);
     }
 
-    const {name, message, rating, date, email, product} = req.body;
+    const {title, message, rating, user, product} = req.body;
     const createdReview = new Review({
-        name,
+        title,
         message,
         rating,
-        date,
-        email,
+        user,
         product,
     });
 
@@ -126,7 +125,7 @@ const updateReviewById = async (req, res, next) => {
         throw new HttpError(errors.errors[0].msg, 422);
     }
 
-    const  {name, message, rating, date, email} = req.body;
+    const  {title, message, rating, user, product} = req.body;
     const reviewId = req.params.rid;
 
     let review;
@@ -144,13 +143,11 @@ const updateReviewById = async (req, res, next) => {
 
 
 
-    review.name = name;
+    review.name = title;
     review.message = message;
     review.price = rating;
-    review.date = date;
-    review.email = email;
-
-
+    review.user = user;
+    review.product = product   ;
 
     try {
         await review.save();
@@ -194,6 +191,7 @@ const deleteReviewById = async (req, res, next) => {
 module.exports = {
     getReviewById,
     getReviewsByProductId,
+    getReviewsByUserId,
     getReviews,
     createReview,
     updateReviewById,

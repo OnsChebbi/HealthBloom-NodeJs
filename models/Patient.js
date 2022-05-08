@@ -1,7 +1,6 @@
-const util = require('util');
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
-
+var util = require('util');
+var mongoose = require('mongoose');
+var Schema = mongoose.Schema;
 
 var patient = new Schema({
     _userId :{
@@ -23,24 +22,7 @@ var patient = new Schema({
     },
     height : Number,
     weight : Number,
-    IMC : Number,
-    BloodType : {
-        type: String,
-        enum : ["A+","A-","B+","B-","AB+","AB-","O+","O-","unknown"],
-        default : "unknown"
-    },
-    Notifications : [{
-        description : String,
-        State : {
-            type : String,
-            enum: ["seen","notSeen"],
-            default: "notSeen"
-        }
-    }],
-    medicalFile:{
-        type: Schema.Types.ObjectId,
-        ref: 'MedicalFile'
-    }
+    IMC : Number
 })
 
 module.exports = mongoose.model('patient',patient);

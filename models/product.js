@@ -10,8 +10,8 @@ const productSchema = new Schema({
     price: {type: Number, required: true},
     quantity: {type: String, required: true},
     category: {type: String, required: true},
-    date:{type: Date, required: true},
     reviews: [{type: mongoose.Types.ObjectId, required: true, ref: 'Review'}]
+
 });
 
 productSchema.plugin(uniqueValidator);

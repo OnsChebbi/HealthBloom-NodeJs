@@ -60,8 +60,10 @@ router.patch('/:pid',
 router.delete('/:pid', productsControllers.deleteProductById);
 
 router.post('/checkout', productsControllers.checkoutCart);
-router.get('/checkout/:sessionId', productsControllers.getPayments);
+router.get('/checkout/:sessionId', productsControllers.paymentReciept);
 router.post('/stripe/webhook', productsControllers.stripeWebhook);
+router.get('/stripe/payments/:email', productsControllers.getPayments);
+router.get('/stripe/session/:piId', productsControllers.getSessionId);
 
 
 module.exports = router;

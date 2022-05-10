@@ -151,9 +151,12 @@ const deleteProductById = async (req, res, next) => {
 const checkoutCart = async (req, res, next) => {
     const sessionId = req.params.pid;
     let coupon;
-    let session ;
-    if (req.body.discount !=0) {
-         coupon = await stripe.coupons.create( {percent_off: req.body.discount, currency: 'usd'});
+    let session;
+    if (req.body.discount && req.body.discount != 0) {
+        coupon = await stripe.coupons.create({
+            percent_off: req.body.discount,
+            currency: 'usd'
+        });
     }
 
     const line_items = req.body.items.map((item) => {
@@ -169,17 +172,17 @@ const checkoutCart = async (req, res, next) => {
         };
     })
     if (coupon) {
-         session = await stripe.checkout.sessions.create({
+        session = await stripe.checkout.sessions.create({
             line_items: line_items,
             mode: 'payment',
             discounts: [{
-                coupon : coupon.id
+                coupon: coupon.id
             }],
             success_url: `${YOUR_DOMAIN}/invoice?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${YOUR_DOMAIN}/checkout`,
         });
-    }else {
-         session = await stripe.checkout.sessions.create({
+    } else {
+        session = await stripe.checkout.sessions.create({
             line_items: line_items,
             mode: 'payment',
             success_url: `${YOUR_DOMAIN}/invoice?session_id={CHECKOUT_SESSION_ID}`,
@@ -191,7 +194,7 @@ const checkoutCart = async (req, res, next) => {
     res.json({url: session.url});
 };
 
-const getPayments = async (req, res, next) => {
+const paymentReciept = async (req, res, next) => {
     const sessionId = req.params.sessionId;
 
     let session;
@@ -203,7 +206,7 @@ const getPayments = async (req, res, next) => {
         console.log(e);
     }
 
-    res.json({items:items.data, session});
+    res.json({items: items.data, session});
 
 };
 
@@ -215,8 +218,7 @@ const stripeWebhook = async (request, response, next) => {
 
     try {
         event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
-    }
-    catch (err) {
+    } catch (err) {
         console.log(err.message);
         response.status(400).send(`Webhook Error: ${err.message}`);
     }
@@ -242,6 +244,42 @@ const stripeWebhook = async (request, response, next) => {
     response.json({received: true});
 };
 
+
+const getPayments = async (req, res, next) => {
+
+    const email = req.params.email;
+    let items;
+    let payments
+    try {
+
+        items = await stripe.paymentIntents.list({limit: 10})
+        payments = items.data.filter(pi => pi.status === "succeeded" && pi.charges.data[0].billing_details.email === email);
+
+    } catch (e) {
+        console.log(e);
+    }
+
+
+    res.json(payments);
+};
+const getSessionId = async (req, res, next) => {
+
+    const piId = req.params.piId;
+
+    let session;
+    try {
+
+        session = await stripe.checkout.sessions.list({
+            payment_intent: piId,
+        });
+    } catch (e) {
+        console.log(e);
+    }
+
+    res.json({sessionId: session.data[0].id});
+};
+
+
 module.exports = {
     getProductById,
     getProducts,
@@ -249,6 +287,8 @@ module.exports = {
     updateProductById,
     deleteProductById,
     checkoutCart,
+    paymentReciept,
+    stripeWebhook,
     getPayments,
-    stripeWebhook
+    getSessionId
 };

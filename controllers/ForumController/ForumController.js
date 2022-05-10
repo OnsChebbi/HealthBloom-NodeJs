@@ -1,7 +1,8 @@
 
-const ForumSection = require("../../models/ForumSection")
+const ForumSection = require("./ForumServices/ForumSectionService")
 const Thread = require("./ForumServices/ThreadService");
 const ThreadComment = require("./ForumServices/ThreadCommentServices");
+const ThreadCommentLike = require("./ForumServices/ThreadCommentLikeService");
 
 exports.addForumSection=async (request,response)=>{
     console.log(request.body)
@@ -23,9 +24,10 @@ exports.addThread=async (request,response)=>{
     console.log(request.body)
     title=request.body.title;
     body=request.body.body;
-
+    userId=request.body.userId;
+    sectionId = request.body.sectionId ;
     try{
-        Thread.addThread(title,body);
+        Thread.addThread(title,body,sectionId,userId);
         response.json({success:true,message:"Thread added successfully"});
 
     }
@@ -60,6 +62,36 @@ exports.getAllThreads=async (request,response)=>{
     }
 }
 
+
+exports.getAllThreadsBySection=async (request,response)=>{
+    let sectionId = request.params.sectionId;
+
+    try{
+        let sections= await Thread.getAllThreadsBySection(sectionId);
+        response.send(sections)
+
+    }
+    catch(error){
+        response.json({success:false,message:error});
+
+    }
+}
+
+exports.getOneForumSection=async (request,response)=>{
+    let id=request.params.id;
+    
+    try{
+        let thr = await ForumSection.getOneForumSection(id)
+
+        response.send(thr)
+        //console.log(thr)
+    }
+    catch(error){
+        response.json({success:false,message:error});
+
+    }
+}
+
 exports.getOneThread=async (request,response)=>{
     let id=request.params.id;
     
@@ -67,7 +99,7 @@ exports.getOneThread=async (request,response)=>{
         let thr = await Thread.getOneThread(id)
 
         response.send(thr)
-        console.log(thr)
+        //console.log(thr)
     }
     catch(error){
         response.json({success:false,message:error});
@@ -87,14 +119,94 @@ exports.deleteForumSection=async (request,response)=>{
     }
 }
 
-exports.addCommentToThread=async (request,response)=>{
-    console.log(request.body)
+exports.addCommentToThread= async (request,response)=>{
+    //console.log(request.body)
     threadId=request.body.threadId;
+    content=request.body.body;
+    userId = request.body.userId;
+    try{
+        let com = await ThreadComment.addCommentToThread(content,threadId,userId);
+        response.send(com);
+
+    }
+    catch(error){
+        response.json({success:false,message:error});
+    
+    }
+}
+
+exports.editComment= async (request,response)=>{
+    //console.log(request.body)
+    commentId=request.body.commentId;
     content=request.body.body;
 
     try{
-        ThreadComment.addCommentToThread(content,threadId);
-        response.json({success:true,message:"Thread added successfully"});
+        let com = await ThreadComment.editComment(content,threadId);
+        response.send(com);
+
+    }
+    catch(error){
+        response.json({success:false,message:error});
+    
+    }
+}
+
+
+exports.deleteCommentFromThread= async (request,response)=>{
+    //console.log(request.body)
+    let id=request.params.id;
+
+    try{
+        let com = await ThreadComment.deleteThreadComment(id);
+        response.send(com);
+
+    }
+    catch(error){
+        response.json({success:false,message:error});
+    
+    }
+}
+
+exports.deleteThread= async (request,response)=>{
+    //console.log(request.body)
+    let id=request.params.id;
+
+    try{
+        let thr = await Thread.deleteThread(id);
+        response.send(thr);
+
+    }
+    catch(error){
+        response.json({success:false,message:error});
+    }
+}
+
+exports.addLikeToComment = async (request, response) => {
+    let userId=request.body.userId;
+    let commentId=request.body.commentId;
+
+    try{
+        let comLike = await ThreadCommentLike.addLikeToComment(userId,commentId);
+        response.send(comLike);
+    }
+    catch(error){
+        response.json({success:false,message:error});
+    
+    }
+}
+
+
+exports.deleteLikeFromComment= async (request,response)=>{
+    //console.log(request.body)
+    let userId=request.params.userId;
+    let commentId=request.params.commentId;
+
+    console.log(userId)
+    console.log(commentId)
+
+    try{
+        let com = await ThreadCommentLike.deleteLikeFromComment(userId,commentId);
+        response.send(com);
 
     }
     catch(error){

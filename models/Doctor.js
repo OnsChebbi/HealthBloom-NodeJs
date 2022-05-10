@@ -14,13 +14,17 @@ var doctor = new Schema({
   LaborTime: String,
   Description: String,
   Started: Date,
-  Patients: [{ type: Schema.Types.ObjectId, ref: "patient" }],
+  Patients: [{ type: Schema.Types.ObjectId, ref: "user" }],
   Status: {
     type: String,
     enum: ["Confirmed", "Pending"],
     default: "Pending",
   },
   Appointments: [{ type: Schema.Types.ObjectId, ref: "Appointment" }],
+  officeMap: {
+    longitude: String,
+    latitude: String,
+  },
 });
 
 module.exports = mongoose.model("doctor", doctor);

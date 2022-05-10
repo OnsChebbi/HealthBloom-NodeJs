@@ -1,5 +1,7 @@
 const Article=  require('../../models/Article')
 const Comment= require('../../models/Comment')
+const Articlelike= require('../../models/Articlelike')
+const User= require('../../models/User')
 
 exports.getOneArticleController=async (request,response)=>{
     let id=request.params.id;
@@ -26,6 +28,17 @@ exports.getOneAuthorController=async (request,response)=>{
     }
 }
 
+exports.getArticlesByCategoryController=async (request,response)=>{
+    let category= request.params.category;
+    try{
+        let articles= await Article.getArticleByCategory(category)
+        response.send(articles)
+
+    }
+catch(error){
+    response.json({success:false,message:error});
+
+}}
 exports.getAllArticlesController=async (request,response)=>{
     try{
         let articles= await Article.getAllArticles()
@@ -97,8 +110,11 @@ exports.addArticleController=async (request,response)=>{
     description=request.body.description;
     author=request.body.author;
     image= request.body.image;
+    category=request.body.category;
+
     try{
-        Article.addArticle(title,description,author,image);
+        Article.addArticle(title,description,author,image,category);
+        Article.getSubscribers(title);
         response.json({success:true,message:"Article added successfully"});
 
     }
@@ -151,10 +167,11 @@ exports.addCommentToArticle=async (request,response)=>{
 
 exports.likeArticle=async (request,response)=>{
     
-   let id=request.params.id;
-    
+   let article=request.params.article;
+   let user=request.params.user;
     try{
-        Article.likeArticle(id)
+        Articlelike.addLike(article,user);
+        Article.incrementLikes(article)    ;    
         response.json({success:true,message:"Article liked successfully"});
 
     }
@@ -166,11 +183,13 @@ exports.likeArticle=async (request,response)=>{
 
 exports.unlikeArticle=async (request,response)=>{
     
-    let id=request.params.id;
-     
+    let article=request.params.article;
+    let user=request.params.user;     
      try{
-         Article.unlikeArticle(id)
-         response.json({success:true,message:"Article unliked successfully"});
+        Articlelike.removeLike(article,user);
+         Article.decrementLikes(article);
+
+         response.json({success:true,message:"Article disliked successfully"});
  
      }
      catch(error){
@@ -181,6 +200,44 @@ exports.unlikeArticle=async (request,response)=>{
  
  }
 
+ exports.sendEmailToSubscribers=async (request,response)=>{
+
+    try{
+        let articles= await Article.getSubscribers()
+
+        for(var i in articles)
+        {
+             document.write(i);
+        }
+    }
+catch(error){
+
+    console.log("error")
+}
+
+}
+
+
+
+exports.getLikeStatus=async (request,response)=>{
+    let article=request.params.article;
+    let user=request.params.user;
+    try{
+        let status= await Articlelike.getLike(article,user);
+        if(status){
+            response.send(true)
+        }
+        else if(!status){
+            response.send(false)
+        }
+
+    }
+    catch(error){
+
+        response.json({success:false,message:error});
+
+    }
+} 
 
  exports.subscribe=async (request,response)=>{
     

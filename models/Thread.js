@@ -5,21 +5,20 @@ const {Schema} = mongoose;
 
 
 
-const current = new Date();
-const date = `${current.getDate()}/${current.getMonth() + 1}/${current.getFullYear()}`;
-
 let schemaThread = Schema({
     title: {
         type: String,
         required: true
     },
-    body: {
+    dateCreated: {
         type: String,
-        required: true
+
     },
     initContent : {type: Schema.Types.ObjectId,ref:'threadComment'},
 
-    comments : [{type: Schema.Types.ObjectId,ref:'threadComment'}]
+    comments : [{type: Schema.Types.ObjectId,ref:'threadComment'}],
+    user : {type: Schema.Types.ObjectId,ref:'user'},
+    section : {type: Schema.Types.ObjectId,ref:'forumSection'}
 })
 
 let Thread = mongoose.model('thread', schemaThread)

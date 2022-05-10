@@ -27,6 +27,7 @@ var forumRouter = require("./routes/ForumRouter/forumRouter");
 var MedicalFileRouter = require("./routes/MedicalFileRoutes");
 var doctorRouter = require("./routes/doctor");
 var addedRouter = require("./routes/addedPatients");
+var appointmentRouter = require("./routes/appointmentRoutes");
 const bodyParser = require("body-parser");
 
 var app = express();
@@ -70,7 +71,7 @@ app.use("/users", usersRouter);
 app.use("/forum", forumRouter);
 app.use("/medicalFile", MedicalFileRouter);
 app.use("/doctor", doctorRouter);
-app.use("/api/appointments", require("./routes/appointmentRoutes"));
+app.use("/api/appointments", appointmentRouter);
 app.use("/added", addedRouter);
 //Connecting to the Mongo database
 app.get("/", (req, res) => {

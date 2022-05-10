@@ -26,6 +26,7 @@ var articleRouter = require("./routes/MagazineRouter/articleRouter");
 var forumRouter = require("./routes/ForumRouter/forumRouter");
 var MedicalFileRouter = require("./routes/MedicalFileRoutes");
 var doctorRouter = require("./routes/doctor");
+var addedRouter = require("./routes/addedPatients");
 const bodyParser = require("body-parser");
 
 var app = express();
@@ -69,7 +70,8 @@ app.use("/users", usersRouter);
 app.use("/forum", forumRouter);
 app.use("/medicalFile", MedicalFileRouter);
 app.use("/doctor", doctorRouter);
-
+app.use("/api/appointments", require("./routes/appointmentRoutes"));
+app.use("/added", addedRouter);
 //Connecting to the Mongo database
 app.get("/", (req, res) => {
   mongoose

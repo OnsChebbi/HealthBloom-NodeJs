@@ -2,21 +2,12 @@ const util = require('util');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-
 var patient = new Schema({
     _userId :{
         type: Schema.Types.ObjectId,
         ref: 'user'
     },
-    appointments : [
-        {
-            Date : Date,
-            Doctor : {
-                type: Schema.Types.ObjectId,
-                ref : 'doctor'
-            }
-        }
-    ],
+    Appointments: [{ type: Schema.Types.ObjectId, ref: "Appointment" }],
     Cart : {
         type: Schema.Types.ObjectId,
         ref: 'cart'
